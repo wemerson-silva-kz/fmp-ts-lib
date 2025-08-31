@@ -1,0 +1,104 @@
+import type { FMPConfig, QueryParams, FMPError } from '../types/index.js';
+
+export class HttpClient {
+  private config: FMPConfig;
+  private baseUrl: string;
+
+  constructor(config: FMPConfig) {
+    this.config = config;
+    this.baseUrl = config.baseUrl || 'https://financialmodelingprep.com/stable';
+  }
+
+  private buildUrl(endpoint: string, params?: QueryParams): string {
+    const url = new URL(`${this.baseUrl}${endpoint}`);
+    
+    // Add API key
+    url.searchParams.append('apikey', this.config.apiKey);
+    
+    // Add other parameters
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          url.searchParams.append(key, String(value));
+        }
+      });
+    }
+    
+    return url.toString();
+  }
+
+  async get<T>(endpoint: string, params?: QueryParams): Promise<T> {
+    const url = this.buildUrl(endpoint, params);
+    
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'FMP-TS-Lib/1.0.0'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorData}`);
+      }
+
+      const data = await response.json();
+      
+      // Check if the response contains an error message
+      if ((data && typeof data === 'object' && 'error' in data) || (Array.isArray(data) && data.length === 0)) {
+        const errorMessage = (data && typeof data === 'object' && 'error' in data) ? String((data as any).error) : 'No data found';
+        throw new Error(errorMessage);
+      }
+
+      return data as T;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw {
+          message: error.message,
+          status: 500
+        } as FMPError;
+      }
+      throw {
+        message: 'Unknown error occurred',
+        status: 500
+      } as FMPError;
+    }
+  }
+
+  async post<T>(endpoint: string, body: any, params?: QueryParams): Promise<T> {
+    const url = this.buildUrl(endpoint, params);
+    
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'FMP-TS-Lib/1.0.0'
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorData}`);
+      }
+
+      const data = await response.json();
+      return data as T;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw {
+          message: error.message,
+          status: 500
+        } as FMPError;
+      }
+      throw {
+        message: 'Unknown error occurred',
+        status: 500
+      } as FMPError;
+    }
+  }
+}
+

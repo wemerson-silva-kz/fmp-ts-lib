@@ -1,0 +1,39 @@
+# Include source files in npm package
+# Development and test files to exclude
+tests/
+*.test.ts
+*.spec.ts
+
+# Development environment
+.vscode/
+.idea/
+node_modules/
+.bun/
+bun.lockb
+
+# Build and config files
+tsconfig*.json
+.gitignore
+.eslintrc*
+.prettierrc*
+jest.config*
+vitest.config*
+
+# Large documentation files
+SIDE-BY-SIDE-COMPARISON.md
+ENDPOINTS-TABLE.md
+ENDPOINT-COMPARISON.md
+
+# Temp and log files
+*.log
+*.tmp
+.env*
+.DS_Store
+Thumbs.db
+
+# Git files
+.git/
+.github/
+
+# Distribution files (using source directly)
+dist/
