@@ -19,10 +19,14 @@
     "dev": "bun run src/index.ts",
     "test": "bun test",
     "test:coverage": "bun test --coverage",
+    "test:real": "bun run test-real-api-fixed.ts",
+    "test:auto-detect": "bun run test-auto-detect.ts",
     "lint": "tsc --noEmit --skipLibCheck",
     "example:basic": "bun run example.ts",
     "example:complete": "bun run example-complete.ts",
-    "example:advanced": "bun run example-simplified.ts"
+    "example:advanced": "bun run example-simplified.ts",
+    "example:rate-limit": "bun run example-rate-limit.ts",
+    "example:enhanced": "bun run example-enhanced-features.ts"
   },
   "keywords": [
     "financial-modeling-prep",

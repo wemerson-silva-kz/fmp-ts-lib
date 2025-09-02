@@ -2,6 +2,20 @@
 export interface FMPConfig {
   apiKey: string;
   baseUrl?: string;
+  // Enhanced features (optional)
+  cache?: {
+    enabled?: boolean;
+    ttl?: number;
+    maxSize?: number;
+  };
+  retry?: {
+    enabled?: boolean;
+    maxAttempts?: number;
+    backoffMs?: number;
+  };
+  metrics?: {
+    enabled?: boolean;
+  };
 }
 
 export interface FMPResponse<T> {

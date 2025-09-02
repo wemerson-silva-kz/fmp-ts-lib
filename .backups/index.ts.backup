@@ -132,20 +132,6 @@ export class FMPClient {
   }
 
   /**
-   * Get metrics (if enabled)
-   */
-  getMetrics() {
-    return this.httpClient.getMetrics();
-  }
-
-  /**
-   * Batch requests for better performance
-   */
-  async batchRequest<T>(requests: (() => Promise<T>)[]): Promise<T[]> {
-    return this.httpClient.batchRequest(requests);
-  }
-
-  /**
    * Configure global rate limiter
    */
   static configureGlobalRateLimit(options: GlobalRateLimitOptions): void {

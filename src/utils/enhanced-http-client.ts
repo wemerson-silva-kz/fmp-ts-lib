@@ -1,12 +1,12 @@
 import type { FMPConfig, QueryParams, FMPError } from '../types/index.js';
 import { MemoryCache, type CacheOptions } from './cache.js';
-import { RateLimiter, type RateLimitOptions } from './rate-limiter.js';
 import { RetryManager, type RetryOptions } from './retry.js';
 import { MetricsCollector } from './metrics.js';
+import { GlobalRateLimiter, type GlobalRateLimitOptions } from './global-rate-limiter.js';
 
 export interface EnhancedHttpClientOptions extends FMPConfig {
   cache?: CacheOptions;
-  rateLimit?: RateLimitOptions;
+  rateLimit?: GlobalRateLimitOptions;
   retry?: RetryOptions;
   enableMetrics?: boolean;
 }
@@ -15,7 +15,6 @@ export class EnhancedHttpClient {
   private config: FMPConfig;
   private baseUrl: string;
   private cache: MemoryCache;
-  private rateLimiter: RateLimiter;
   private retryManager: RetryManager;
   private metrics: MetricsCollector;
   private enableMetrics: boolean;
@@ -25,11 +24,15 @@ export class EnhancedHttpClient {
       apiKey: options.apiKey,
       baseUrl: options.baseUrl
     };
-    this.baseUrl = options.baseUrl || 'https://financialmodelingprep.com/stable';
+    this.baseUrl = options.baseUrl || 'https://financialmodelingprep.com/api/v3';
+    
+    // Configure global rate limiter
+    if (options.rateLimit) {
+      GlobalRateLimiter.configure(options.rateLimit);
+    }
     
     // Initialize components
     this.cache = new MemoryCache(options.cache);
-    this.rateLimiter = new RateLimiter(options.rateLimit);
     this.retryManager = new RetryManager(options.retry);
     this.metrics = new MetricsCollector();
     this.enableMetrics = options.enableMetrics !== false;
@@ -85,12 +88,9 @@ export class EnhancedHttpClient {
         }
       }
 
-      // Check rate limit
+      // Check global rate limit with auto-retry
       if (!options?.skipRateLimit) {
-        const rateLimitCheck = await this.rateLimiter.checkLimit(this.config.apiKey);
-        if (!rateLimitCheck.allowed) {
-          throw new Error(`Rate limit exceeded. Retry after ${rateLimitCheck.retryAfter} seconds`);
-        }
+        await this.waitForRateLimit();
       }
 
       // Execute request with retry logic
@@ -225,7 +225,15 @@ export class EnhancedHttpClient {
   }
 
   getMetrics() {
-    return this.enableMetrics ? this.metrics.getMetrics() : null;
+    if (!this.enableMetrics) return null;
+    
+    const baseMetrics = this.metrics.getMetrics();
+    const rateLimitUsage = GlobalRateLimiter.getUsage(this.config.apiKey);
+    
+    return {
+      ...baseMetrics,
+      rateLimit: rateLimitUsage
+    };
   }
 
   getPerformanceSummary() {
@@ -250,11 +258,28 @@ export class EnhancedHttpClient {
     return this.enableMetrics ? this.metrics.export() : null;
   }
 
+  private async waitForRateLimit(): Promise<void> {
+    while (true) {
+      const rateLimitCheck = await GlobalRateLimiter.checkAndIncrement(this.config.apiKey);
+      
+      if (rateLimitCheck.allowed) {
+        return; // Can proceed
+      }
+      
+      // Rate limit exceeded - wait and retry
+      const waitTime = (rateLimitCheck.retryAfter || 60) * 1000;
+      console.log(`⏳ Rate limit exceeded. Waiting ${rateLimitCheck.retryAfter}s before retry...`);
+      
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      // Loop will continue and try again
+    }
+  }
+
   private setupPeriodicCleanup(): void {
-    // Clean up cache and rate limiter every 5 minutes
+    // Clean up cache and global rate limiter every 5 minutes
     setInterval(() => {
       this.cache.cleanup();
-      this.rateLimiter.cleanup();
+      GlobalRateLimiter.cleanup();
     }, 5 * 60 * 1000);
   }
 
