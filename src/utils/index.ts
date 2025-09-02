@@ -1,6 +1,6 @@
 // HTTP Clients
 export { HttpClient } from './http-client.js';
-export { EnhancedHttpClient } from './enhanced-http-client.js';
+// export { EnhancedHttpClient } from './enhanced-http-client.js';
 
 // Performance and reliability
 export { MemoryCache } from './cache.js';
@@ -19,7 +19,7 @@ export type { CacheOptions, CacheEntry } from './cache.js';
 export type { GlobalRateLimitOptions } from './global-rate-limiter.js';
 export type { RetryOptions } from './retry.js';
 export type { APIMetrics, RequestMetric } from './metrics.js';
-export type { EnhancedHttpClientOptions } from './enhanced-http-client.js';
+// export type { EnhancedHttpClientOptions } from './enhanced-http-client.js';
 
 // Utility functions
 export const formatDate = (date: Date): string => {

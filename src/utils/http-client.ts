@@ -29,8 +29,8 @@ export class HttpClient {
     
     if (config.retry?.enabled) {
       this.retryManager = new RetryManager({
-        maxAttempts: config.retry.maxAttempts || 3,
-        backoffMs: config.retry.backoffMs || 1000
+        maxRetries: config.retry.maxAttempts || 3,
+        baseDelay: config.retry.backoffMs || 1000
       });
     }
     

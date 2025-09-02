@@ -208,7 +208,7 @@ export * from './utils/index.js';
 export * from './services/index.js';
 
 // Export advanced client
-export { AdvancedFMPClient } from './advanced-client.js';
+// export { AdvancedFMPClient } from './advanced-client.js';
 
 // Default export
 export default FMPClient;
