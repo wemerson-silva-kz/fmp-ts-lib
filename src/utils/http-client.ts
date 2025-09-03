@@ -81,6 +81,18 @@ export class HttpClient {
         throw new Error(`HTTP ${response.status}: ${errorData}`);
       }
 
+      // Check content type to determine how to parse response
+      const contentType = response.headers.get('content-type') || '';
+      
+      // If it's CSV or the endpoint is known to return CSV, return as text
+      if (contentType.includes('text/csv') || 
+          contentType.includes('text/plain') ||
+          endpoint.includes('-bulk') ||
+          endpoint.includes('/bulk')) {
+        const csvData = await response.text();
+        return csvData as T;
+      }
+
       const data = await response.json();
       
       // Check if the response contains an error message
@@ -90,6 +102,59 @@ export class HttpClient {
       }
 
       return data as T;
+    }, endpoint, params);
+  }
+
+  /**
+   * Get CSV data as string
+   * @param endpoint - API endpoint
+   * @param params - Query parameters
+   * @returns CSV data as string
+   */
+  async getCSV(endpoint: string, params?: QueryParams): Promise<string> {
+    return this.executeWithFeatures(async () => {
+      const url = this.buildUrl(endpoint, params);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'text/csv, text/plain, */*',
+          'User-Agent': 'FMP-TS-Lib/1.0.0'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorData}`);
+      }
+
+      return await response.text();
+    }, endpoint, params);
+  }
+
+  /**
+   * Get file as buffer
+   * @param endpoint - API endpoint
+   * @param params - Query parameters
+   * @returns File data as ArrayBuffer
+   */
+  async getFile(endpoint: string, params?: QueryParams): Promise<ArrayBuffer> {
+    return this.executeWithFeatures(async () => {
+      const url = this.buildUrl(endpoint, params);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'FMP-TS-Lib/1.0.0'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorData}`);
+      }
+
+      return await response.arrayBuffer();
     }, endpoint, params);
   }
 

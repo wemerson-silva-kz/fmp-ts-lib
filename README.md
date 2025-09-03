@@ -162,7 +162,30 @@ const healthScore = client.analyzer.calculateHealthScore(income, balance);
 const redFlags = client.analyzer.identifyRedFlags(ratios);
 ```
 
-### 📊 **Portfolio Management**
+### 📊 **CSV Data Handling**
+```typescript
+// Bulk endpoints automatically return CSV data as strings
+const csvData = await client.bulk.getCompanyProfileBulk('0');
+console.log(typeof csvData); // "string"
+
+// Parse CSV data
+const lines = csvData.split('\n');
+const headers = lines[0].split(',');
+const rows = lines.slice(1).map(line => {
+  const values = line.split(',');
+  const obj: any = {};
+  headers.forEach((header, index) => {
+    obj[header] = values[index];
+  });
+  return obj;
+});
+
+// Direct CSV method (advanced usage)
+const csvData2 = await client.httpClient.getCSV('/profile-bulk', { part: '0' });
+
+// File buffer method (for binary data)
+const buffer = await client.httpClient.getFile('/some-endpoint');
+```
 ```typescript
 // Portfolio analysis
 const portfolio = [
