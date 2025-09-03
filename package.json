@@ -1,5 +1,5 @@
 {
-  "name": "fmp-ts-lib",
+  "name": "@wemerson-silva-kz/fmp-ts-lib",
   "version": "1.1.0-beta",
   "description": "🚀 Complete TypeScript library for Financial Modeling Prep API with 100% endpoint coverage (298 endpoints), enterprise-grade features, and advanced financial analysis tools",
   "main": "dist/index.js",
@@ -53,6 +53,9 @@
     "url": "https://github.com/wemerson-silva-kz/fmp-ts-lib"
   },
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/wemerson-silva-kz/fmp-ts-lib.git"
