@@ -1,65 +1,81 @@
-import { getFirstOrItem } from '../utils/index.js';
-import type { MarketGainer, QueryParams } from '../types/index.js';
+import type { QueryParams } from '../types/index.js';
 import { HttpClient } from '../utils/http-client.js';
 
 export class MarketPerformanceService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Get stock market gainers
-   * @param limit - Maximum number of results
+   * Market Sector Performance Snapshot API - Get sector performance snapshot
+   * @param date - Date (required, YYYY-MM-DD format)
+   * @param exchange - Exchange (optional, e.g., "NASDAQ")
+   * @param sector - Sector (optional, e.g., "Energy")
    */
-  async getStockMarketGainers(limit: number = 100): Promise<MarketGainer[]> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get<MarketGainer[]>('/gainers', params);
+  async getSectorPerformanceSnapshot(date: string, exchange?: string, sector?: string): Promise<Array<{
+    date: string;
+    sector: string;
+    exchange: string;
+    changesPercentage: number;
+  }>> {
+    const params: QueryParams = { date };
+    if (exchange) params.exchange = exchange;
+    if (sector) params.sector = sector;
+    return this.httpClient.get('/sector-performance-snapshot', params);
   }
 
   /**
-   * Get stock market losers
-   * @param limit - Maximum number of results
+   * Stock Market Gainers API - Get top gaining stocks
    */
-  async getStockMarketLosers(limit: number = 100): Promise<Array<{
+  async getMarketGainers(): Promise<Array<{
     symbol: string;
     name: string;
     change: number;
     price: number;
     changesPercentage: number;
   }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/losers', params);
+    return this.httpClient.get('/gainers');
   }
 
   /**
-   * Get most active stocks
-   * @param limit - Maximum number of results
+   * Stock Market Losers API - Get top losing stocks
    */
-  async getMostActiveStocks(limit: number = 100): Promise<Array<{
+  async getMarketLosers(): Promise<Array<{
     symbol: string;
     name: string;
     change: number;
     price: number;
     changesPercentage: number;
-    volume: number;
   }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/actives', params);
+    return this.httpClient.get('/losers');
   }
 
   /**
-   * Get sector performance
+   * Most Active Stocks API - Get most active stocks
+   */
+  async getMostActiveStocks(): Promise<Array<{
+    symbol: string;
+    name: string;
+    change: number;
+    price: number;
+    changesPercentage: number;
+  }>> {
+    return this.httpClient.get('/actives');
+  }
+
+  /**
+   * Sector Performance API - Get sector performance
    */
   async getSectorPerformance(): Promise<Array<{
     sector: string;
-    changesPercentage: number;
+    changesPercentage: string;
   }>> {
-    return this.httpClient.get('/sectors-performance');
+    return this.httpClient.get('/sector-performance');
   }
 
   /**
-   * Get historical sector performance
-   * @param limit - Maximum number of results
+   * Historical Sector Performance API - Get historical sector performance
+   * @param limit - Number of results (optional)
    */
-  async getHistoricalSectorPerformance(limit: number = 50): Promise<Array<{
+  async getHistoricalSectorPerformance(limit?: number): Promise<Array<{
     date: string;
     technologyChangesPercentage: number;
     healthcareChangesPercentage: number;
@@ -67,147 +83,38 @@ export class MarketPerformanceService {
     communicationServicesChangesPercentage: number;
     industrialsChangesPercentage: number;
     consumerDiscretionaryChangesPercentage: number;
+    basicMaterialsChangesPercentage: number;
+    realEstateChangesPercentage: number;
+    utilitiesChangesPercentage: number;
     consumerStaplesChangesPercentage: number;
     energyChangesPercentage: number;
-    utilitiesChangesPercentage: number;
-    realEstateChangesPercentage: number;
-    materialsChangesPercentage: number;
   }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/historical-sectors-performance', params);
+    const params: QueryParams = {};
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/historical-sector-performance', params);
   }
 
   /**
-   * Get market performance by exchange
-   * @param exchange - Exchange name (e.g., "NASDAQ", "NYSE")
+   * Market Hours API - Get market hours status
    */
-  async getMarketPerformanceByExchange(exchange: string): Promise<{
-    exchange: string;
-    gainers: MarketGainer[];
-    losers: Array<{
-      symbol: string;
-      name: string;
-      change: number;
-      price: number;
-      changesPercentage: number;
+  async getMarketHours(): Promise<Array<{
+    stockExchangeName: string;
+    stockMarketHours: {
+      openingHour: string;
+      closingHour: string;
+    };
+    stockMarketHolidays: Array<{
+      year: number;
+      holidays: Array<{
+        date: string;
+        name: string;
+      }>;
     }>;
-    mostActive: Array<{
-      symbol: string;
-      name: string;
-      change: number;
-      price: number;
-      changesPercentage: number;
-      volume: number;
-    }>;
-  }> {
-    const params: QueryParams = { exchange };
-    return this.httpClient.get('/market-performance/exchange', params);
-  }
-
-  /**
-   * Get market performance summary
-   */
-  async getMarketPerformanceSummary(): Promise<{
-    date: string;
-    totalGainers: number;
-    totalLosers: number;
-    totalUnchanged: number;
-    advanceDeclineRatio: number;
-    marketSentiment: 'Bullish' | 'Bearish' | 'Neutral';
-    topSector: string;
-    worstSector: string;
-    averageVolumeChange: number;
-  }> {
-    const result = await this.httpClient.get('/market-performance/summary');
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get pre-market gainers
-   * @param limit - Maximum number of results
-   */
-  async getPreMarketGainers(limit: number = 50): Promise<MarketGainer[]> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/pre-market-gainers', params);
-  }
-
-  /**
-   * Get pre-market losers
-   * @param limit - Maximum number of results
-   */
-  async getPreMarketLosers(limit: number = 50): Promise<Array<{
-    symbol: string;
-    name: string;
-    change: number;
-    price: number;
-    changesPercentage: number;
+    isTheStockMarketOpen: boolean;
+    isTheEuronextMarketOpen: boolean;
+    isTheForexMarketOpen: boolean;
+    isTheCryptoMarketOpen: boolean;
   }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/pre-market-losers', params);
-  }
-
-  /**
-   * Get after-hours gainers
-   * @param limit - Maximum number of results
-   */
-  async getAfterHoursGainers(limit: number = 50): Promise<MarketGainer[]> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/after-hours-gainers', params);
-  }
-
-  /**
-   * Get after-hours losers
-   * @param limit - Maximum number of results
-   */
-  async getAfterHoursLosers(limit: number = 50): Promise<Array<{
-    symbol: string;
-    name: string;
-    change: number;
-    price: number;
-    changesPercentage: number;
-  }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/after-hours-losers', params);
-  }
-
-  /**
-   * Get market movers by market cap
-   * @param marketCapRange - Market cap range ("small", "mid", "large")
-   * @param limit - Maximum number of results
-   */
-  async getMarketMoversByMarketCap(
-    marketCapRange: 'small' | 'mid' | 'large',
-    limit: number = 50
-  ): Promise<{
-    gainers: MarketGainer[];
-    losers: Array<{
-      symbol: string;
-      name: string;
-      change: number;
-      price: number;
-      changesPercentage: number;
-    }>;
-  }> {
-    const params: QueryParams = { marketCapRange, limit };
-    return this.httpClient.get('/market-movers/market-cap', params);
-  }
-
-  /**
-   * Get unusual volume stocks
-   * @param limit - Maximum number of results
-   */
-  async getUnusualVolumeStocks(limit: number = 100): Promise<Array<{
-    symbol: string;
-    name: string;
-    price: number;
-    change: number;
-    changesPercentage: number;
-    volume: number;
-    avgVolume: number;
-    volumeRatio: number;
-  }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/unusual-volume', params);
+    return this.httpClient.get('/is-the-market-open');
   }
 }
-

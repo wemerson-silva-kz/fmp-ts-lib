@@ -1,4 +1,3 @@
-import { getFirstOrItem } from '../utils/index.js';
 import type { QueryParams } from '../types/index.js';
 import { HttpClient } from '../utils/http-client.js';
 
@@ -6,225 +5,243 @@ export class Form13FService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Get Form 13F filings by CIK
-   * @param cik - Central Index Key
-   * @param date - Filing date (YYYY-MM-DD) - optional
+   * Institutional Ownership Filings API - Get latest institutional ownership filings
+   * @param page - Page number (optional, default: 0, max: 100)
+   * @param limit - Number of results (optional, default: 100)
    */
-  async getForm13F(cik: string, date?: string): Promise<Array<{
+  async getLatestInstitutionalFilings(page?: number, limit?: number): Promise<Array<{
+    cik: string;
+    name: string;
     date: string;
-    fillingDate: string;
+    filingDate: string;
+    acceptedDate: string;
+    formType: string;
+    link: string;
+    finalLink: string;
+  }>> {
+    const params: QueryParams = {};
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/institutional-ownership/latest', params);
+  }
+
+  /**
+   * Filings Extract API - Extract detailed data from SEC filings
+   * @param cik - Central Index Key (required, e.g., "0001388838")
+   * @param year - Year (required, e.g., "2023")
+   * @param quarter - Quarter (required, e.g., "3")
+   */
+  async getFilingsExtract(cik: string, year: string, quarter: string): Promise<Array<{
+    date: string;
+    filingDate: string;
     acceptedDate: string;
     cik: string;
-    cusip: string;
-    tickerSymbol: string;
+    securityCusip: string;
+    symbol: string;
     nameOfIssuer: string;
     shares: number;
     titleOfClass: string;
+    sharesType: string;
+    putCallShare: string;
     value: number;
-    weightPercentage: number;
+    link: string;
+    finalLink: string;
   }>> {
-    const params: QueryParams = {};
-    if (date) params.date = date;
-    return this.httpClient.get(`/form-thirteenf/${cik}`, params);
+    return this.httpClient.get('/institutional-ownership/extract', { cik, year, quarter });
   }
 
   /**
-   * Get institutional holders for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Form 13F Filings Dates API - Get filing dates for a CIK
+   * @param cik - Central Index Key (required, e.g., "0001067983")
    */
-  async getInstitutionalHolders(symbol: string): Promise<Array<{
+  async getFilingsDates(cik: string): Promise<Array<{
+    date: string;
+    year: number;
+    quarter: number;
+  }>> {
+    return this.httpClient.get('/institutional-ownership/dates', { cik });
+  }
+
+  /**
+   * Filings Extract With Analytics By Holder API - Get analytical breakdown by holder
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param year - Year (required, e.g., "2023")
+   * @param quarter - Quarter (required, e.g., "3")
+   * @param page - Page number (optional, default: 0)
+   * @param limit - Number of results (optional, default: 10)
+   */
+  async getFilingsAnalyticsByHolder(symbol: string, year: string, quarter: string, page?: number, limit?: number): Promise<Array<{
     date: string;
     cik: string;
+    filingDate: string;
     investorName: string;
     symbol: string;
-    cusip: string;
-    shares: number;
-    value: number;
-    weightPercentage: number;
-    lastValue: number;
-    lastShares: number;
-    changeInShares: number;
-    changeInSharesPercentage: number;
-    changeInValue: number;
-    changeInValuePercentage: number;
-  }>> {
-    return this.httpClient.get(`/institutional-holder/${symbol}`);
-  }
-
-  /**
-   * Get mutual fund holders for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getMutualFundHolders(symbol: string): Promise<Array<{
-    date: string;
-    cik: string;
-    investorName: string;
-    symbol: string;
-    cusip: string;
-    shares: number;
-    value: number;
-    weightPercentage: number;
-    lastValue: number;
-    lastShares: number;
-    changeInShares: number;
-    changeInSharesPercentage: number;
-    changeInValue: number;
-    changeInValuePercentage: number;
-  }>> {
-    return this.httpClient.get(`/mutual-fund-holder/${symbol}`);
-  }
-
-  /**
-   * Get ETF holders for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getETFHolders(symbol: string): Promise<Array<{
-    date: string;
-    cik: string;
-    investorName: string;
-    symbol: string;
-    cusip: string;
-    shares: number;
-    value: number;
-    weightPercentage: number;
-    lastValue: number;
-    lastShares: number;
-    changeInShares: number;
-    changeInSharesPercentage: number;
-    changeInValue: number;
-    changeInValuePercentage: number;
-  }>> {
-    return this.httpClient.get(`/etf-holder/${symbol}`);
-  }
-
-  /**
-   * Get ETF stock exposure
-   * @param symbol - ETF symbol (e.g., "SPY")
-   */
-  async getETFStockExposure(symbol: string): Promise<Array<{
-    etfSymbol: string;
-    assetExposure: string;
-    sharesNumber: number;
-    weightPercentage: number;
+    securityName: string;
+    typeOfSecurity: string;
+    securityCusip: string;
+    sharesType: string;
+    putCallShare: string;
+    investmentDiscretion: string;
+    industryTitle: string;
+    weight: number;
+    lastWeight: number;
+    changeInWeight: number;
+    changeInWeightPercentage: number;
     marketValue: number;
+    lastMarketValue: number;
+    changeInMarketValue: number;
+    changeInMarketValuePercentage: number;
+    sharesNumber: number;
+    lastSharesNumber: number;
+    changeInSharesNumber: number;
+    changeInSharesNumberPercentage: number;
+    quarterEndPrice: number;
+    avgPricePaid: number;
+    isNew: boolean;
+    isSoldOut: boolean;
+    ownership: number;
+    lastOwnership: number;
+    changeInOwnership: number;
+    changeInOwnershipPercentage: number;
+    holdingPeriod: number;
+    firstAdded: string;
+    performance: number;
+    performancePercentage: number;
+    lastPerformance: number;
+    changeInPerformance: number;
+    isCountedForPerformance: boolean;
   }>> {
-    return this.httpClient.get(`/etf-stock-exposure/${symbol}`);
+    const params: QueryParams = { symbol, year, quarter };
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/institutional-ownership/extract-analytics/holder', params);
   }
 
   /**
-   * Get institutional stock ownership
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param includeCurrentQuarter - Include current quarter data
+   * Holder Performance Summary API - Get performance summary for institutional holders
+   * @param cik - Central Index Key (required, e.g., "0001067983")
+   * @param page - Page number (optional, default: 0)
    */
-  async getInstitutionalStockOwnership(
-    symbol: string, 
-    includeCurrentQuarter: boolean = false
-  ): Promise<Array<{
+  async getHolderPerformanceSummary(cik: string, page?: number): Promise<Array<{
     date: string;
-    totalInvested: number;
-    ownershipPercent: number;
+    cik: string;
+    investorName: string;
+    portfolioSize: number;
+    securitiesAdded: number;
+    securitiesRemoved: number;
+    marketValue: number;
+    previousMarketValue: number;
+    changeInMarketValue: number;
+    changeInMarketValuePercentage: number;
+    averageHoldingPeriod: number;
+    averageHoldingPeriodTop10: number;
+    averageHoldingPeriodTop20: number;
+    turnover: number;
+    turnoverAlternateSell: number;
+    turnoverAlternateBuy: number;
+    performance: number;
+    performancePercentage: number;
+    lastPerformance: number;
+    changeInPerformance: number;
+    performance1year: number;
+    performancePercentage1year: number;
+    performance3year: number;
+    performancePercentage3year: number;
+    performance5year: number;
+    performancePercentage5year: number;
+    performanceSinceInception: number;
+    performanceSinceInceptionPercentage: number;
+    performanceRelativeToSP500Percentage: number;
+    performance1yearRelativeToSP500Percentage: number;
+    performance3yearRelativeToSP500Percentage: number;
+    performance5yearRelativeToSP500Percentage: number;
+    performanceSinceInceptionRelativeToSP500Percentage: number;
+  }>> {
+    const params: QueryParams = { cik };
+    if (page !== undefined) params.page = page;
+    return this.httpClient.get('/institutional-ownership/holder-performance-summary', params);
+  }
+
+  /**
+   * Holders Industry Breakdown API - Get industry breakdown for holders
+   * @param cik - Central Index Key (required, e.g., "0001067983")
+   * @param year - Year (required, e.g., "2023")
+   * @param quarter - Quarter (required, e.g., "3")
+   */
+  async getHolderIndustryBreakdown(cik: string, year: string, quarter: string): Promise<Array<{
+    date: string;
+    cik: string;
+    investorName: string;
+    industryTitle: string;
+    weight: number;
+    lastWeight: number;
+    changeInWeight: number;
+    changeInWeightPercentage: number;
+    performance: number;
+    performancePercentage: number;
+    lastPerformance: number;
+    changeInPerformance: number;
+  }>> {
+    return this.httpClient.get('/institutional-ownership/holder-industry-breakdown', { cik, year, quarter });
+  }
+
+  /**
+   * Positions Summary API - Get positions summary for a symbol
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param year - Year (required, e.g., "2023")
+   * @param quarter - Quarter (required, e.g., "3")
+   */
+  async getPositionsSummary(symbol: string, year: string, quarter: string): Promise<Array<{
+    symbol: string;
+    cik: string;
+    date: string;
     investorsHolding: number;
     lastInvestorsHolding: number;
     investorsHoldingChange: number;
     numberOf13Fshares: number;
     lastNumberOf13Fshares: number;
     numberOf13FsharesChange: number;
+    totalInvested: number;
+    lastTotalInvested: number;
     totalInvestedChange: number;
+    ownershipPercent: number;
+    lastOwnershipPercent: number;
     ownershipPercentChange: number;
     newPositions: number;
+    lastNewPositions: number;
+    newPositionsChange: number;
     increasedPositions: number;
-    decreasedPositions: number;
+    lastIncreasedPositions: number;
+    increasedPositionsChange: number;
     closedPositions: number;
+    lastClosedPositions: number;
+    closedPositionsChange: number;
+    reducedPositions: number;
+    lastReducedPositions: number;
+    reducedPositionsChange: number;
     totalCalls: number;
+    lastTotalCalls: number;
+    totalCallsChange: number;
     totalPuts: number;
+    lastTotalPuts: number;
+    totalPutsChange: number;
     putCallRatio: number;
+    lastPutCallRatio: number;
+    putCallRatioChange: number;
   }>> {
-    const params: QueryParams = {};
-    if (includeCurrentQuarter) params.includeCurrentQuarter = includeCurrentQuarter;
-    return this.httpClient.get(`/institutional-ownership/${symbol}`, params);
+    return this.httpClient.get('/institutional-ownership/symbol-positions-summary', { symbol, year, quarter });
   }
 
   /**
-   * Get institutional ownership by investor
-   * @param cik - Central Index Key of the investor
-   * @param date - Date for the filing (YYYY-MM-DD) - optional
+   * Industry Performance Summary API - Get industry performance summary
+   * @param year - Year (required, e.g., "2023")
+   * @param quarter - Quarter (required, e.g., "3")
    */
-  async getInstitutionalOwnershipByInvestor(cik: string, date?: string): Promise<Array<{
-    cik: string;
-    investorName: string;
-    symbol: string;
-    cusip: string;
-    tickerSymbol: string;
-    securityName: string;
-    shares: number;
-    value: number;
-    weightPercentage: number;
-    date: string;
-    fillingDate: string;
-    acceptedDate: string;
-  }>> {
-    const params: QueryParams = {};
-    if (date) params.date = date;
-    return this.httpClient.get(`/institutional-ownership/portfolio-holdings/${cik}`, params);
-  }
-
-  /**
-   * Get institutional ownership changes
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getInstitutionalOwnershipChanges(symbol: string): Promise<Array<{
-    date: string;
-    cik: string;
-    investorName: string;
-    symbol: string;
-    securityName: string;
-    typeOfSecurity: string;
-    shares: number;
-    value: number;
-    weightPercentage: number;
-    changeType: string;
-    changeInShares: number;
-    changeInSharesPercentage: number;
-    changeInValue: number;
-    changeInValuePercentage: number;
-  }>> {
-    return this.httpClient.get(`/institutional-ownership/ownership-changes/${symbol}`);
-  }
-
-  /**
-   * Get top institutional holders
-   * @param limit - Maximum number of results
-   */
-  async getTopInstitutionalHolders(limit: number = 100): Promise<Array<{
-    cik: string;
-    investorName: string;
-    totalValue: number;
-    totalPositions: number;
+  async getIndustryPerformanceSummary(year: string, quarter: string): Promise<Array<{
+    industryTitle: string;
+    industryValue: number;
     date: string;
   }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/institutional-ownership/top-holders', params);
-  }
-
-  /**
-   * Get institutional ownership summary for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getInstitutionalOwnershipSummary(symbol: string): Promise<{
-    symbol: string;
-    date: string;
-    totalInstitutionalShares: number;
-    totalShares: number;
-    institutionalOwnershipPercentage: number;
-    topHolders: Array<{
-      investorName: string;
-      shares: number;
-      value: number;
-      weightPercentage: number;
-    }>;
-  }> {
-    const result = await this.httpClient.get(`/institutional-ownership/summary/${symbol}`);
-    return getFirstOrItem(result);
+    return this.httpClient.get('/institutional-ownership/industry-summary', { year, quarter });
   }
 }
-

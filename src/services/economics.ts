@@ -5,38 +5,9 @@ export class EconomicsService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Get economic indicators
-   * @param name - Economic indicator name (optional)
-   */
-  async getEconomicIndicators(name?: string): Promise<Array<{
-    date: string;
-    value: number;
-    name: string;
-  }>> {
-    const params: QueryParams = {};
-    if (name) params.name = name;
-    return this.httpClient.get('/economic', params);
-  }
-
-  /**
-   * Get market risk premium data
-   * @param country - Country code (e.g., "US")
-   */
-  async getMarketRiskPremium(country?: string): Promise<Array<{
-    country: string;
-    continent: string;
-    totalEquityRiskPremium: number;
-    countryRiskPremium: number;
-  }>> {
-    const params: QueryParams = {};
-    if (country) params.country = country;
-    return this.httpClient.get('/market_risk_premium', params);
-  }
-
-  /**
-   * Get treasury rates
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
+   * Treasury Rates API - Get real-time and historical Treasury rates
+   * @param from - Start date (optional, YYYY-MM-DD format, max 90-day range)
+   * @param to - End date (optional, YYYY-MM-DD format, max 90-day range)
    */
   async getTreasuryRates(from?: string, to?: string): Promise<Array<{
     date: string;
@@ -56,77 +27,58 @@ export class EconomicsService {
     const params: QueryParams = {};
     if (from) params.from = from;
     if (to) params.to = to;
-    return this.httpClient.get('/treasury', params);
+    return this.httpClient.get('/treasury-rates', params);
   }
 
   /**
-   * Get economic calendar events
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
+   * Economics Indicators API - Get economic indicators data
+   * @param name - Economic indicator name (required, e.g., "GDP", "realGDP", "inflationRate", "unemploymentRate")
+   * @param from - Start date (optional, YYYY-MM-DD format, max 90-day range)
+   * @param to - End date (optional, YYYY-MM-DD format, max 90-day range)
+   */
+  async getEconomicIndicators(name: string, from?: string, to?: string): Promise<Array<{
+    name: string;
+    date: string;
+    value: number;
+  }>> {
+    const params: QueryParams = { name };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    return this.httpClient.get('/economic-indicators', params);
+  }
+
+  /**
+   * Economic Data Releases Calendar API - Get economic calendar
+   * @param from - Start date (optional, YYYY-MM-DD format, max 90-day range)
+   * @param to - End date (optional, YYYY-MM-DD format, max 90-day range)
    */
   async getEconomicCalendar(from?: string, to?: string): Promise<Array<{
-    event: string;
     date: string;
     country: string;
-    actual: number;
+    event: string;
+    currency: string;
     previous: number;
+    estimate: number | null;
+    actual: number;
     change: number;
-    changePercentage: number;
-    estimate: number;
     impact: string;
+    changePercentage: number;
   }>> {
     const params: QueryParams = {};
     if (from) params.from = from;
     if (to) params.to = to;
-    return this.httpClient.get('/economic_calendar', params);
+    return this.httpClient.get('/economic-calendar', params);
   }
 
   /**
-   * Get GDP data by country
-   * @param country - Country code (e.g., "US")
+   * Market Risk Premium API - Get market risk premium data
    */
-  async getGDPData(country: string): Promise<Array<{
-    date: string;
-    value: number;
+  async getMarketRiskPremium(): Promise<Array<{
     country: string;
+    continent: string;
+    countryRiskPremium: number;
+    totalEquityRiskPremium: number;
   }>> {
-    return this.httpClient.get(`/economic/gdp/${country}`);
-  }
-
-  /**
-   * Get inflation data by country
-   * @param country - Country code (e.g., "US")
-   */
-  async getInflationData(country: string): Promise<Array<{
-    date: string;
-    value: number;
-    country: string;
-  }>> {
-    return this.httpClient.get(`/economic/inflation/${country}`);
-  }
-
-  /**
-   * Get unemployment rate by country
-   * @param country - Country code (e.g., "US")
-   */
-  async getUnemploymentRate(country: string): Promise<Array<{
-    date: string;
-    value: number;
-    country: string;
-  }>> {
-    return this.httpClient.get(`/economic/unemployment/${country}`);
-  }
-
-  /**
-   * Get interest rates by country
-   * @param country - Country code (e.g., "US")
-   */
-  async getInterestRates(country: string): Promise<Array<{
-    date: string;
-    value: number;
-    country: string;
-  }>> {
-    return this.httpClient.get(`/economic/interest-rate/${country}`);
+    return this.httpClient.get('/market-risk-premium');
   }
 }
-

@@ -1,306 +1,148 @@
-import { getFirstOrItem } from '../utils/index.js';
-import type { TechnicalIndicator, QueryParams, TimeFrame } from '../types/index.js';
+import type { QueryParams } from '../types/index.js';
 import { HttpClient } from '../utils/http-client.js';
 
 export class TechnicalIndicatorsService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Get technical indicators for a symbol
-   * @param timeframe - Time frame (1min, 5min, 15min, 30min, 1hour, 4hour, 1day)
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param type - Indicator type (optional)
-   * @param period - Period for calculation (optional)
+   * Simple Moving Average (SMA) API
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param periodLength - Period length (required, e.g., 20)
+   * @param timeframe - Timeframe (required, e.g., "1day")
    */
-  async getTechnicalIndicators(
-    timeframe: TimeFrame,
-    symbol: string,
-    type?: string,
-    period?: number
-  ): Promise<TechnicalIndicator[]> {
-    const params: QueryParams = {};
-    if (type) params.type = type;
-    if (period) params.period = period;
-    return this.httpClient.get<TechnicalIndicator[]>(`/technical_indicator/${timeframe}/${symbol}`, params);
-  }
-
-  /**
-   * Get daily technical indicators
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param type - Indicator type (optional)
-   * @param period - Period for calculation (optional)
-   */
-  async getDailyTechnicalIndicators(
-    symbol: string,
-    type?: string,
-    period?: number
-  ): Promise<TechnicalIndicator[]> {
-    const params: QueryParams = {};
-    if (type) params.type = type;
-    if (period) params.period = period;
-    return this.httpClient.get<TechnicalIndicator[]>(`/technical_indicator/daily/${symbol}`, params);
-  }
-
-  /**
-   * Get Simple Moving Average (SMA)
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param timeframe - Time frame
-   * @param period - Period for SMA calculation (default: 20)
-   */
-  async getSMA(symbol: string, timeframe: TimeFrame, period: number = 20): Promise<Array<{
+  async getSMA(symbol: string, periodLength: number, timeframe: string): Promise<Array<{
     date: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
     sma: number;
   }>> {
-    const params: QueryParams = { type: 'sma', period };
-    return this.httpClient.get(`/technical_indicator/${timeframe}/${symbol}`, params);
+    return this.httpClient.get('/technical-indicators/sma', { symbol, periodLength, timeframe });
   }
 
   /**
-   * Get Exponential Moving Average (EMA)
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param timeframe - Time frame
-   * @param period - Period for EMA calculation (default: 20)
+   * Exponential Moving Average (EMA) API
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param periodLength - Period length (required, e.g., 20)
+   * @param timeframe - Timeframe (required, e.g., "1day")
    */
-  async getEMA(symbol: string, timeframe: TimeFrame, period: number = 20): Promise<Array<{
+  async getEMA(symbol: string, periodLength: number, timeframe: string): Promise<Array<{
     date: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
     ema: number;
   }>> {
-    const params: QueryParams = { type: 'ema', period };
-    return this.httpClient.get(`/technical_indicator/${timeframe}/${symbol}`, params);
+    return this.httpClient.get('/technical-indicators/ema', { symbol, periodLength, timeframe });
   }
 
   /**
-   * Get Relative Strength Index (RSI)
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param timeframe - Time frame
-   * @param period - Period for RSI calculation (default: 14)
+   * Relative Strength Index (RSI) API
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param periodLength - Period length (required, e.g., 14)
+   * @param timeframe - Timeframe (required, e.g., "1day")
    */
-  async getRSI(symbol: string, timeframe: TimeFrame, period: number = 14): Promise<Array<{
+  async getRSI(symbol: string, periodLength: number, timeframe: string): Promise<Array<{
     date: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
     rsi: number;
   }>> {
-    const params: QueryParams = { type: 'rsi', period };
-    return this.httpClient.get(`/technical_indicator/${timeframe}/${symbol}`, params);
+    return this.httpClient.get('/technical-indicators/rsi', { symbol, periodLength, timeframe });
   }
 
   /**
-   * Get Moving Average Convergence Divergence (MACD)
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param timeframe - Time frame
+   * Moving Average Convergence Divergence (MACD) API
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param fastPeriod - Fast period (required, e.g., 12)
+   * @param slowPeriod - Slow period (required, e.g., 26)
+   * @param signalPeriod - Signal period (required, e.g., 9)
+   * @param timeframe - Timeframe (required, e.g., "1day")
    */
-  async getMACD(symbol: string, timeframe: TimeFrame): Promise<Array<{
+  async getMACD(symbol: string, fastPeriod: number, slowPeriod: number, signalPeriod: number, timeframe: string): Promise<Array<{
     date: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
     macd: number;
-    macdSignal: number;
-    macdHistogram: number;
+    signal: number;
+    histogram: number;
   }>> {
-    const params: QueryParams = { type: 'macd' };
-    return this.httpClient.get(`/technical_indicator/${timeframe}/${symbol}`, params);
+    return this.httpClient.get('/technical-indicators/macd', { 
+      symbol, 
+      fastPeriod, 
+      slowPeriod, 
+      signalPeriod, 
+      timeframe 
+    });
   }
 
   /**
-   * Get Bollinger Bands
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param timeframe - Time frame
-   * @param period - Period for calculation (default: 20)
-   * @param standardDeviation - Standard deviation multiplier (default: 2)
+   * Average Directional Index (ADX) API
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param periodLength - Period length (required, e.g., 14)
+   * @param timeframe - Timeframe (required, e.g., "1day")
    */
-  async getBollingerBands(
-    symbol: string, 
-    timeframe: TimeFrame, 
-    period: number = 20,
-    standardDeviation: number = 2
-  ): Promise<Array<{
+  async getADX(symbol: string, periodLength: number, timeframe: string): Promise<Array<{
     date: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
+    adx: number;
+  }>> {
+    return this.httpClient.get('/technical-indicators/adx', { symbol, periodLength, timeframe });
+  }
+
+  /**
+   * Bollinger Bands API
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param periodLength - Period length (required, e.g., 20)
+   * @param standardDeviation - Standard deviation (required, e.g., 2)
+   * @param timeframe - Timeframe (required, e.g., "1day")
+   */
+  async getBollingerBands(symbol: string, periodLength: number, standardDeviation: number, timeframe: string): Promise<Array<{
+    date: string;
     upperBand: number;
     middleBand: number;
     lowerBand: number;
   }>> {
-    const params: QueryParams = { type: 'bollinger', period, standardDeviation };
-    return this.httpClient.get(`/technical_indicator/${timeframe}/${symbol}`, params);
+    return this.httpClient.get('/technical-indicators/bb', { 
+      symbol, 
+      periodLength, 
+      standardDeviation, 
+      timeframe 
+    });
   }
 
   /**
-   * Get Average Directional Index (ADX)
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param timeframe - Time frame
-   * @param period - Period for ADX calculation (default: 14)
+   * Stochastic Oscillator API
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param kPeriod - K period (required, e.g., 14)
+   * @param dPeriod - D period (required, e.g., 3)
+   * @param timeframe - Timeframe (required, e.g., "1day")
    */
-  async getADX(symbol: string, timeframe: TimeFrame, period: number = 14): Promise<Array<{
+  async getStochastic(symbol: string, kPeriod: number, dPeriod: number, timeframe: string): Promise<Array<{
     date: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-    adx: number;
-    plusDI: number;
-    minusDI: number;
+    k: number;
+    d: number;
   }>> {
-    const params: QueryParams = { type: 'adx', period };
-    return this.httpClient.get(`/technical_indicator/${timeframe}/${symbol}`, params);
+    return this.httpClient.get('/technical-indicators/stoch', { 
+      symbol, 
+      kPeriod, 
+      dPeriod, 
+      timeframe 
+    });
   }
 
   /**
-   * Get Stochastic Oscillator
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param timeframe - Time frame
-   * @param kPeriod - %K period (default: 14)
-   * @param dPeriod - %D period (default: 3)
+   * Williams %R API
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param periodLength - Period length (required, e.g., 14)
+   * @param timeframe - Timeframe (required, e.g., "1day")
    */
-  async getStochastic(
-    symbol: string, 
-    timeframe: TimeFrame, 
-    kPeriod: number = 14,
-    dPeriod: number = 3
-  ): Promise<Array<{
+  async getWilliamsR(symbol: string, periodLength: number, timeframe: string): Promise<Array<{
     date: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-    stochK: number;
-    stochD: number;
+    wr: number;
   }>> {
-    const params: QueryParams = { type: 'stochastic', kPeriod, dPeriod };
-    return this.httpClient.get(`/technical_indicator/${timeframe}/${symbol}`, params);
+    return this.httpClient.get('/technical-indicators/wr', { symbol, periodLength, timeframe });
   }
 
   /**
-   * Get Williams %R
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param timeframe - Time frame
-   * @param period - Period for calculation (default: 14)
+   * Commodity Channel Index (CCI) API
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param periodLength - Period length (required, e.g., 20)
+   * @param timeframe - Timeframe (required, e.g., "1day")
    */
-  async getWilliamsR(symbol: string, timeframe: TimeFrame, period: number = 14): Promise<Array<{
+  async getCCI(symbol: string, periodLength: number, timeframe: string): Promise<Array<{
     date: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-    williamsR: number;
-  }>> {
-    const params: QueryParams = { type: 'williams_r', period };
-    return this.httpClient.get(`/technical_indicator/${timeframe}/${symbol}`, params);
-  }
-
-  /**
-   * Get Commodity Channel Index (CCI)
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param timeframe - Time frame
-   * @param period - Period for calculation (default: 20)
-   */
-  async getCCI(symbol: string, timeframe: TimeFrame, period: number = 20): Promise<Array<{
-    date: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
     cci: number;
   }>> {
-    const params: QueryParams = { type: 'cci', period };
-    return this.httpClient.get(`/technical_indicator/${timeframe}/${symbol}`, params);
-  }
-
-  /**
-   * Get Ichimoku Cloud
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param timeframe - Time frame
-   */
-  async getIchimoku(symbol: string, timeframe: TimeFrame): Promise<Array<{
-    date: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-    tenkanSen: number;
-    kijunSen: number;
-    senkouSpanA: number;
-    senkouSpanB: number;
-    chikouSpan: number;
-  }>> {
-    const params: QueryParams = { type: 'ichimoku' };
-    return this.httpClient.get(`/technical_indicator/${timeframe}/${symbol}`, params);
-  }
-
-  /**
-   * Get technical analysis summary
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param timeframe - Time frame
-   */
-  async getTechnicalAnalysisSummary(symbol: string, timeframe: TimeFrame): Promise<{
-    symbol: string;
-    timeframe: string;
-    date: string;
-    summary: 'Strong Buy' | 'Buy' | 'Neutral' | 'Sell' | 'Strong Sell';
-    movingAverages: {
-      summary: string;
-      signals: Array<{
-        name: string;
-        value: number;
-        signal: string;
-      }>;
-    };
-    oscillators: {
-      summary: string;
-      signals: Array<{
-        name: string;
-        value: number;
-        signal: string;
-      }>;
-    };
-    pivotPoints: {
-      classic: {
-        pivot: number;
-        r1: number;
-        r2: number;
-        r3: number;
-        s1: number;
-        s2: number;
-        s3: number;
-      };
-      fibonacci: {
-        pivot: number;
-        r1: number;
-        r2: number;
-        r3: number;
-        s1: number;
-        s2: number;
-        s3: number;
-      };
-    };
-  }> {
-    const result = await this.httpClient.get(`/technical-analysis-summary/${timeframe}/${symbol}`);
-    return getFirstOrItem(result);
+    return this.httpClient.get('/technical-indicators/cci', { symbol, periodLength, timeframe });
   }
 }
-

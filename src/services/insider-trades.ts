@@ -1,198 +1,139 @@
-import { getFirstOrItem } from '../utils/index.js';
-import type { InsiderTrading, QueryParams } from '../types/index.js';
+import type { QueryParams } from '../types/index.js';
 import { HttpClient } from '../utils/http-client.js';
 
 export class InsiderTradesService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Get insider trading data for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param limit - Maximum number of results
+   * Latest Insider Trading API - Get latest insider trading activity
+   * @param date - Date (optional, YYYY-MM-DD format)
+   * @param page - Page number (optional, max: 100)
+   * @param limit - Number of results (optional, max: 1000)
    */
-  async getInsiderTrading(symbol: string, limit: number = 100): Promise<InsiderTrading[]> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get<InsiderTrading[]>(`/insider-trading/${symbol}`, params);
-  }
-
-  /**
-   * Get insider trading RSS feed
-   * @param limit - Maximum number of results
-   */
-  async getInsiderTradingRSSFeed(limit: number = 100): Promise<Array<{
-    title: string;
-    date: string;
-    content: string;
+  async getLatestInsiderTrading(date?: string, page?: number, limit?: number): Promise<Array<{
+    filingDate: string;
+    transactionDate: string;
+    reportingCik: string;
+    transactionType: string;
+    securitiesOwned: number;
+    companyCik: string;
+    reportingName: string;
+    typeOfOwner: string;
+    acquistionOrDisposition: string;
+    formType: string;
+    securitiesTransacted: number;
+    price: number;
+    securityName: string;
+    link: string;
     symbol: string;
-    url: string;
   }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/insider-trading-rss-feed', params);
+    const params: QueryParams = {};
+    if (date) params.date = date;
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/insider-trading/latest', params);
   }
 
   /**
-   * Get insider roster (list of insiders for a company)
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Insider Trading by Symbol API - Get insider trading for specific symbol
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param page - Page number (optional)
+   * @param limit - Number of results (optional)
+   */
+  async getInsiderTradingBySymbol(symbol: string, page?: number, limit?: number): Promise<Array<{
+    filingDate: string;
+    transactionDate: string;
+    reportingCik: string;
+    transactionType: string;
+    securitiesOwned: number;
+    companyCik: string;
+    reportingName: string;
+    typeOfOwner: string;
+    acquistionOrDisposition: string;
+    formType: string;
+    securitiesTransacted: number;
+    price: number;
+    securityName: string;
+    link: string;
+    symbol: string;
+  }>> {
+    const params: QueryParams = {};
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get(`/insider-trading/${symbol}`, params);
+  }
+
+  /**
+   * Insider Trading Statistics API - Get insider trading statistics
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   */
+  async getInsiderTradingStatistics(symbol: string): Promise<Array<{
+    symbol: string;
+    year: number;
+    quarter: number;
+    purchases: number;
+    sales: number;
+    purchasesAmount: number;
+    salesAmount: number;
+    netAmount: number;
+  }>> {
+    return this.httpClient.get(`/insider-trading-statistics/${symbol}`);
+  }
+
+  /**
+   * Insider Roster API - Get company insider roster
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
    */
   async getInsiderRoster(symbol: string): Promise<Array<{
     cik: string;
-    ownerCik: string;
-    ownerName: string;
-    typeOfOwner: string;
+    name: string;
+    title: string;
     symbol: string;
-    companyName: string;
-    relationshipWithCompany: string;
   }>> {
-    return this.httpClient.get(`/insider-roaster/${symbol}`);
+    return this.httpClient.get(`/insider-roster/${symbol}`);
   }
 
   /**
-   * Get insider roster statistics
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Insider Trading by Reporting Person API - Get trading by specific person
+   * @param reportingCik - Reporting person CIK (required)
+   * @param page - Page number (optional)
+   * @param limit - Number of results (optional)
    */
-  async getInsiderRosterStatistics(symbol: string): Promise<Array<{
-    year: number;
-    quarter: number;
-    symbol: string;
-    cik: string;
-    ownerCik: string;
-    ownerName: string;
-    averageTransactionPrice: number;
-    totalBought: number;
-    totalSold: number;
-    totalTransactions: number;
-    netActivity: number;
-    netActivityDollarValue: number;
-  }>> {
-    return this.httpClient.get(`/insider-roaster-statistic/${symbol}`);
-  }
-
-  /**
-   * Get insider trading by transaction type
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param transactionType - Transaction type ("P-Purchase", "S-Sale", etc.)
-   * @param limit - Maximum number of results
-   */
-  async getInsiderTradingByType(
-    symbol: string, 
-    transactionType: string,
-    limit: number = 100
-  ): Promise<InsiderTrading[]> {
-    const params: QueryParams = { transactionType, limit };
-    return this.httpClient.get<InsiderTrading[]>(`/insider-trading/${symbol}`, params);
-  }
-
-  /**
-   * Get insider trading summary for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param period - Time period ("1M", "3M", "6M", "1Y")
-   */
-  async getInsiderTradingSummary(
-    symbol: string,
-    period: '1M' | '3M' | '6M' | '1Y' = '3M'
-  ): Promise<{
-    symbol: string;
-    period: string;
-    totalTransactions: number;
-    totalBuyTransactions: number;
-    totalSellTransactions: number;
-    totalBuyValue: number;
-    totalSellValue: number;
-    netInsiderActivity: number;
-    averageTransactionSize: number;
-    uniqueInsiders: number;
-    sentiment: 'Bullish' | 'Bearish' | 'Neutral';
-  }> {
-    const params: QueryParams = { period };
-    const result = await this.httpClient.get(`/insider-trading-summary/${symbol}`, params);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get top insider buyers
-   * @param limit - Maximum number of results
-   */
-  async getTopInsiderBuyers(limit: number = 50): Promise<Array<{
-    symbol: string;
-    companyName: string;
-    ownerName: string;
-    totalBought: number;
-    totalValue: number;
-    averagePrice: number;
-    transactionCount: number;
-    lastTransactionDate: string;
-  }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/insider-trading/top-buyers', params);
-  }
-
-  /**
-   * Get top insider sellers
-   * @param limit - Maximum number of results
-   */
-  async getTopInsiderSellers(limit: number = 50): Promise<Array<{
-    symbol: string;
-    companyName: string;
-    ownerName: string;
-    totalSold: number;
-    totalValue: number;
-    averagePrice: number;
-    transactionCount: number;
-    lastTransactionDate: string;
-  }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/insider-trading/top-sellers', params);
-  }
-
-  /**
-   * Get insider trading by CIK
-   * @param cik - Central Index Key of the insider
-   * @param limit - Maximum number of results
-   */
-  async getInsiderTradingByCIK(cik: string, limit: number = 100): Promise<InsiderTrading[]> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get<InsiderTrading[]>(`/insider-trading/cik/${cik}`, params);
-  }
-
-  /**
-   * Get insider trading alerts
-   * @param minValue - Minimum transaction value
-   * @param limit - Maximum number of results
-   */
-  async getInsiderTradingAlerts(minValue: number = 1000000, limit: number = 100): Promise<Array<{
-    symbol: string;
+  async getInsiderTradingByPerson(reportingCik: string, page?: number, limit?: number): Promise<Array<{
     filingDate: string;
     transactionDate: string;
-    reportingName: string;
+    reportingCik: string;
     transactionType: string;
+    securitiesOwned: number;
+    companyCik: string;
+    reportingName: string;
+    typeOfOwner: string;
+    acquistionOrDisposition: string;
+    formType: string;
     securitiesTransacted: number;
     price: number;
-    totalValue: number;
-    alertType: string;
-    significance: 'High' | 'Medium' | 'Low';
+    securityName: string;
+    link: string;
+    symbol: string;
   }>> {
-    const params: QueryParams = { minValue, limit };
-    return this.httpClient.get('/insider-trading/alerts', params);
+    const params: QueryParams = {};
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get(`/insider-trading/person/${reportingCik}`, params);
   }
 
   /**
-   * Get insider ownership changes
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Insider Trading Summary API - Get insider trading summary
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
    */
-  async getInsiderOwnershipChanges(symbol: string): Promise<Array<{
-    ownerCik: string;
-    ownerName: string;
+  async getInsiderTradingSummary(symbol: string): Promise<Array<{
     symbol: string;
-    currentShares: number;
-    previousShares: number;
-    changeInShares: number;
-    changePercentage: number;
-    currentValue: number;
-    previousValue: number;
-    changeInValue: number;
-    lastTransactionDate: string;
+    totalBought: number;
+    totalSold: number;
+    netActivity: number;
+    totalTransactions: number;
+    averagePrice: number;
   }>> {
-    return this.httpClient.get(`/insider-ownership-changes/${symbol}`);
+    return this.httpClient.get(`/insider-trading-summary/${symbol}`);
   }
 }
-

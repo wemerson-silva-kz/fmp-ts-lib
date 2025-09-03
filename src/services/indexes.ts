@@ -1,20 +1,32 @@
-import { getFirstOrItem } from '../utils/index.js';
-import type { HistoricalPrice, QueryParams } from '../types/index.js';
+import type { QueryParams } from '../types/index.js';
 import { HttpClient } from '../utils/http-client.js';
 
 export class IndexesService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Get major index data
-   * @param index - Index symbol (e.g., "^GSPC", "^DJI", "^IXIC")
+   * Stock Market Indexes List API - Get list of all stock market indexes
    */
-  async getMajorIndex(index: string): Promise<{
+  async getIndexesList(): Promise<Array<{
+    symbol: string;
+    name: string;
+    exchange: string;
+    currency: string;
+  }>> {
+    return this.httpClient.get('/index-list');
+  }
+
+  /**
+   * Index Quote API - Get real-time index quote
+   * @param symbol - Index symbol (required, e.g., "^GSPC")
+   */
+  async getIndexQuote(symbol: string): Promise<Array<{
     symbol: string;
     name: string;
     price: number;
-    changesPercentage: number;
+    changePercentage: number;
     change: number;
+    volume: number;
     dayLow: number;
     dayHigh: number;
     yearHigh: number;
@@ -22,36 +34,146 @@ export class IndexesService {
     marketCap: number;
     priceAvg50: number;
     priceAvg200: number;
-    volume: number;
-    avgVolume: number;
     exchange: string;
     open: number;
     previousClose: number;
     timestamp: number;
-  }> {
-    const result = await this.httpClient.get(`/quote/${index}`);
-    return getFirstOrItem(result);
+  }>> {
+    return this.httpClient.get('/quote', { symbol });
   }
 
   /**
-   * Get historical major index data
-   * @param index - Index symbol (e.g., "^GSPC", "^DJI", "^IXIC")
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
+   * Index Short Quote API - Get concise index quote
+   * @param symbol - Index symbol (required, e.g., "^GSPC")
    */
-  async getHistoricalMajorIndex(
-    index: string,
-    from?: string,
-    to?: string
-  ): Promise<HistoricalPrice[]> {
+  async getIndexQuoteShort(symbol: string): Promise<Array<{
+    symbol: string;
+    price: number;
+    change: number;
+    volume: number;
+  }>> {
+    return this.httpClient.get('/quote-short', { symbol });
+  }
+
+  /**
+   * All Index Quotes API - Get quotes for all indexes
+   * @param short - Return short format (optional, default: false)
+   */
+  async getAllIndexQuotes(short?: boolean): Promise<Array<{
+    symbol: string;
+    price: number;
+    change: number;
+    volume: number;
+  }>> {
     const params: QueryParams = {};
+    if (short !== undefined) params.short = short;
+    return this.httpClient.get('/batch-index-quotes', params);
+  }
+
+  /**
+   * Historical Index Light Chart API - Get light historical data
+   * @param symbol - Index symbol (required, e.g., "^GSPC")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   */
+  async getHistoricalIndexLight(symbol: string, from?: string, to?: string): Promise<Array<{
+    symbol: string;
+    date: string;
+    price: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
     if (from) params.from = from;
     if (to) params.to = to;
-    return this.httpClient.get<HistoricalPrice[]>(`/historical-chart/1day/${index}`, params);
+    return this.httpClient.get('/historical-price-eod/light', params);
   }
 
   /**
-   * Get S&P 500 constituent companies
+   * Historical Index Full Chart API - Get full historical data
+   * @param symbol - Index symbol (required, e.g., "^GSPC")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   */
+  async getHistoricalIndexFull(symbol: string, from?: string, to?: string): Promise<Array<{
+    symbol: string;
+    date: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+    change: number;
+    changePercent: number;
+    vwap: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    return this.httpClient.get('/historical-price-eod/full', params);
+  }
+
+  /**
+   * 1-Minute Interval Index Price API - Get 1-minute intraday data
+   * @param symbol - Index symbol (required, e.g., "^GSPC")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   */
+  async getIndex1MinuteData(symbol: string, from?: string, to?: string): Promise<Array<{
+    date: string;
+    open: number;
+    low: number;
+    high: number;
+    close: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    return this.httpClient.get('/historical-chart/1min', params);
+  }
+
+  /**
+   * 5-Minute Interval Index Price API - Get 5-minute intraday data
+   * @param symbol - Index symbol (required, e.g., "^GSPC")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   */
+  async getIndex5MinuteData(symbol: string, from?: string, to?: string): Promise<Array<{
+    date: string;
+    open: number;
+    low: number;
+    high: number;
+    close: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    return this.httpClient.get('/historical-chart/5min', params);
+  }
+
+  /**
+   * 1-Hour Interval Index Price API - Get 1-hour intraday data
+   * @param symbol - Index symbol (required, e.g., "^GSPC")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   */
+  async getIndex1HourData(symbol: string, from?: string, to?: string): Promise<Array<{
+    date: string;
+    open: number;
+    low: number;
+    high: number;
+    close: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    return this.httpClient.get('/historical-chart/1hour', params);
+  }
+
+  /**
+   * S&P 500 Index API - Get S&P 500 constituents
    */
   async getSP500Constituents(): Promise<Array<{
     symbol: string;
@@ -63,11 +185,11 @@ export class IndexesService {
     cik: string;
     founded: string;
   }>> {
-    return this.httpClient.get('/sp500_constituent');
+    return this.httpClient.get('/sp500-constituent');
   }
 
   /**
-   * Get NASDAQ constituent companies
+   * Nasdaq Index API - Get Nasdaq constituents
    */
   async getNasdaqConstituents(): Promise<Array<{
     symbol: string;
@@ -75,15 +197,15 @@ export class IndexesService {
     sector: string;
     subSector: string;
     headQuarter: string;
-    dateFirstAdded: string;
+    dateFirstAdded: string | null;
     cik: string;
     founded: string;
   }>> {
-    return this.httpClient.get('/nasdaq_constituent');
+    return this.httpClient.get('/nasdaq-constituent');
   }
 
   /**
-   * Get Dow Jones constituent companies
+   * Dow Jones API - Get Dow Jones constituents
    */
   async getDowJonesConstituents(): Promise<Array<{
     symbol: string;
@@ -95,111 +217,51 @@ export class IndexesService {
     cik: string;
     founded: string;
   }>> {
-    return this.httpClient.get('/dowjones_constituent');
+    return this.httpClient.get('/dowjones-constituent');
   }
 
   /**
-   * Get historical S&P 500 constituents
+   * Historical S&P 500 API - Get historical S&P 500 changes
    */
-  async getHistoricalSP500Constituents(): Promise<Array<{
+  async getHistoricalSP500(): Promise<Array<{
     dateAdded: string;
     addedSecurity: string;
     removedTicker: string;
     removedSecurity: string;
     date: string;
-    reason: string;
-  }>> {
-    return this.httpClient.get('/historical/sp500_constituent');
-  }
-
-  /**
-   * Get historical NASDAQ constituents
-   */
-  async getHistoricalNasdaqConstituents(): Promise<Array<{
-    dateAdded: string;
-    addedSecurity: string;
-    removedTicker: string;
-    removedSecurity: string;
-    date: string;
-    reason: string;
-  }>> {
-    return this.httpClient.get('/historical/nasdaq_constituent');
-  }
-
-  /**
-   * Get historical Dow Jones constituents
-   */
-  async getHistoricalDowJonesConstituents(): Promise<Array<{
-    dateAdded: string;
-    addedSecurity: string;
-    removedTicker: string;
-    removedSecurity: string;
-    date: string;
-    reason: string;
-  }>> {
-    return this.httpClient.get('/historical/dowjones_constituent');
-  }
-
-  /**
-   * Get all major indexes quotes
-   */
-  async getAllMajorIndexes(): Promise<Array<{
     symbol: string;
-    name: string;
-    price: number;
-    changesPercentage: number;
-    change: number;
-    dayLow: number;
-    dayHigh: number;
-    yearHigh: number;
-    yearLow: number;
-    marketCap: number;
-    priceAvg50: number;
-    priceAvg200: number;
-    volume: number;
-    avgVolume: number;
-    exchange: string;
-    open: number;
-    previousClose: number;
-    timestamp: number;
+    reason: string;
   }>> {
-    const indexes = ['^GSPC', '^DJI', '^IXIC', '^RUT', '^VIX'];
-    const indexList = indexes.join(',');
-    return this.httpClient.get(`/quote/${indexList}`);
+    return this.httpClient.get('/historical-sp500-constituent');
   }
 
   /**
-   * Get index performance comparison
-   * @param indexes - Array of index symbols
-   * @param period - Time period for comparison
+   * Historical Nasdaq API - Get historical Nasdaq changes
    */
-  async getIndexPerformanceComparison(
-    indexes: string[],
-    period: '1D' | '5D' | '1M' | '3M' | '6M' | '1Y' | '5Y' = '1Y'
-  ): Promise<Array<{
+  async getHistoricalNasdaq(): Promise<Array<{
+    dateAdded: string;
+    addedSecurity: string;
+    removedTicker: string;
+    removedSecurity: string;
+    date: string;
     symbol: string;
-    name: string;
-    performance: number;
-    startPrice: number;
-    endPrice: number;
-    period: string;
+    reason: string;
   }>> {
-    const indexList = indexes.join(',');
-    const params: QueryParams = { period };
-    return this.httpClient.get(`/index-performance/${indexList}`, params);
+    return this.httpClient.get('/historical-nasdaq-constituent');
   }
 
   /**
-   * Get sector performance within an index
-   * @param index - Index symbol (e.g., "^GSPC")
+   * Historical Dow Jones API - Get historical Dow Jones changes
    */
-  async getSectorPerformanceByIndex(index: string): Promise<Array<{
-    sector: string;
-    changesPercentage: number;
-    totalCompanies: number;
-    marketCap: number;
+  async getHistoricalDowJones(): Promise<Array<{
+    dateAdded: string;
+    addedSecurity: string;
+    removedTicker: string;
+    removedSecurity: string;
+    date: string;
+    symbol: string;
+    reason: string;
   }>> {
-    return this.httpClient.get(`/sector-performance/${index}`);
+    return this.httpClient.get('/historical-dowjones-constituent');
   }
 }
-

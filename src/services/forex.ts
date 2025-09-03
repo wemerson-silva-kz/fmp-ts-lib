@@ -1,247 +1,183 @@
-import { getFirstOrItem } from '../utils/index.js';
-import type { ForexQuote, HistoricalPrice, QueryParams } from '../types/index.js';
+import type { QueryParams } from '../types/index.js';
 import { HttpClient } from '../utils/http-client.js';
 
 export class ForexService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Get forex quote for a currency pair
-   * @param pair - Currency pair (e.g., "EURUSD", "GBPUSD")
+   * Forex List API - Get list of all forex pairs
    */
-  async getForexQuote(pair: string): Promise<ForexQuote> {
-    const result = await this.httpClient.get<ForexQuote[]>(`/fx/${pair}`);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get all forex quotes
-   */
-  async getAllForexQuotes(): Promise<ForexQuote[]> {
-    return this.httpClient.get<ForexQuote[]>('/quotes/forex');
-  }
-
-  /**
-   * Get historical forex prices
-   * @param pair - Currency pair (e.g., "EURUSD", "GBPUSD")
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
-   */
-  async getHistoricalForexPrices(
-    pair: string,
-    from?: string,
-    to?: string
-  ): Promise<{
+  async getForexList(): Promise<Array<{
     symbol: string;
-    historical: HistoricalPrice[];
-  }> {
-    const params: QueryParams = {};
-    if (from) params.from = from;
-    if (to) params.to = to;
-    return this.httpClient.get(`/historical-price-full/forex/${pair}`, params);
+    name: string;
+    currency: string;
+    exchangeFullName: string;
+    exchange: string;
+  }>> {
+    return this.httpClient.get('/forex-list');
   }
 
   /**
-   * Get major currency pairs
+   * Forex Quote API - Get forex quote
+   * @param symbol - Forex symbol (required, e.g., "EURUSD")
    */
-  async getMajorCurrencyPairs(): Promise<ForexQuote[]> {
-    const majorPairs = ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD', 'USDCAD', 'NZDUSD'];
-    const pairList = majorPairs.join(',');
-    return this.httpClient.get<ForexQuote[]>(`/fx/${pairList}`);
-  }
-
-  /**
-   * Get currency exchange rates
-   * @param baseCurrency - Base currency (e.g., "USD")
-   */
-  async getCurrencyExchangeRates(baseCurrency: string): Promise<Array<{
-    from: string;
-    to: string;
-    rate: number;
+  async getForexQuote(symbol: string): Promise<Array<{
+    symbol: string;
+    name: string;
+    price: number;
+    changesPercentage: number;
+    change: number;
+    dayLow: number;
+    dayHigh: number;
+    yearHigh: number;
+    yearLow: number;
+    marketCap: number;
+    priceAvg50: number;
+    priceAvg200: number;
+    exchange: string;
+    volume: number;
+    avgVolume: number;
+    open: number;
+    previousClose: number;
     timestamp: number;
   }>> {
-    const params: QueryParams = { base: baseCurrency };
-    return this.httpClient.get('/currency-exchange-rates', params);
+    return this.httpClient.get('/quote', { symbol });
   }
 
   /**
-   * Get forex market hours
+   * Forex Short Quote API - Get short forex quote
+   * @param symbol - Forex symbol (required, e.g., "EURUSD")
    */
-  async getForexMarketHours(): Promise<Array<{
-    market: string;
-    timezone: string;
-    isOpen: boolean;
-    openTime: string;
-    closeTime: string;
-    nextOpen: string;
-    nextClose: string;
-  }>> {
-    return this.httpClient.get('/forex-market-hours');
-  }
-
-  /**
-   * Get forex volatility data
-   * @param pair - Currency pair (e.g., "EURUSD")
-   * @param period - Time period ("1D", "1W", "1M", "3M", "6M", "1Y")
-   */
-  async getForexVolatility(
-    pair: string,
-    period: '1D' | '1W' | '1M' | '3M' | '6M' | '1Y' = '1M'
-  ): Promise<{
+  async getForexQuoteShort(symbol: string): Promise<Array<{
     symbol: string;
-    period: string;
-    volatility: number;
-    averageVolatility: number;
-    highVolatility: number;
-    lowVolatility: number;
-  }> {
-    const params: QueryParams = { period };
-    const result = await this.httpClient.get(`/forex-volatility/${pair}`, params);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get forex correlation matrix
-   * @param pairs - Array of currency pairs
-   * @param period - Time period for correlation calculation
-   */
-  async getForexCorrelation(
-    pairs: string[],
-    period: '1M' | '3M' | '6M' | '1Y' = '3M'
-  ): Promise<{
-    period: string;
-    correlationMatrix: Array<{
-      pair1: string;
-      pair2: string;
-      correlation: number;
-    }>;
-  }> {
-    const pairList = pairs.join(',');
-    const params: QueryParams = { pairs: pairList, period };
-    const result = await this.httpClient.get('/forex-correlation', params);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get forex economic calendar
-   * @param currency - Currency code (e.g., "USD", "EUR")
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
-   */
-  async getForexEconomicCalendar(
-    currency?: string,
-    from?: string,
-    to?: string
-  ): Promise<Array<{
-    event: string;
-    date: string;
-    country: string;
-    currency: string;
-    actual: number;
-    previous: number;
-    change: number;
-    changePercentage: number;
-    estimate: number;
-    impact: string;
+    price: number;
+    volume: number;
   }>> {
-    const params: QueryParams = {};
-    if (currency) params.currency = currency;
+    return this.httpClient.get('/quote-short', { symbol });
+  }
+
+  /**
+   * Batch Forex Quotes API - Get all forex quotes
+   */
+  async getBatchForexQuotes(): Promise<Array<{
+    symbol: string;
+    name: string;
+    price: number;
+    changesPercentage: number;
+    change: number;
+    dayLow: number;
+    dayHigh: number;
+    yearHigh: number;
+    yearLow: number;
+    marketCap: number;
+    volume: number;
+    avgVolume: number;
+    open: number;
+    previousClose: number;
+    timestamp: number;
+  }>> {
+    return this.httpClient.get('/batch-forex-quotes');
+  }
+
+  /**
+   * Historical Forex Light Chart API - Get light historical data
+   * @param symbol - Forex symbol (required, e.g., "EURUSD")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   */
+  async getHistoricalForexLight(symbol: string, from?: string, to?: string): Promise<Array<{
+    symbol: string;
+    date: string;
+    price: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
     if (from) params.from = from;
     if (to) params.to = to;
-    return this.httpClient.get('/forex-economic-calendar', params);
+    return this.httpClient.get('/historical-price-eod/light', params);
   }
 
   /**
-   * Get central bank rates
+   * Historical Forex Full Chart API - Get full historical data
+   * @param symbol - Forex symbol (required, e.g., "EURUSD")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
    */
-  async getCentralBankRates(): Promise<Array<{
-    country: string;
-    currency: string;
-    centralBank: string;
-    currentRate: number;
-    previousRate: number;
-    change: number;
-    lastUpdate: string;
-    nextMeeting: string;
-  }>> {
-    return this.httpClient.get('/central-bank-rates');
-  }
-
-  /**
-   * Get forex sentiment data
-   * @param pair - Currency pair (e.g., "EURUSD")
-   */
-  async getForexSentiment(pair: string): Promise<{
-    symbol: string;
-    bullishPercentage: number;
-    bearishPercentage: number;
-    sentiment: 'Bullish' | 'Bearish' | 'Neutral';
-    lastUpdate: string;
-  }> {
-    const result = await this.httpClient.get(`/forex-sentiment/${pair}`);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get forex carry trade data
-   */
-  async getForexCarryTrade(): Promise<Array<{
-    highYieldCurrency: string;
-    lowYieldCurrency: string;
-    interestRateDifferential: number;
-    carryTradeReturn: number;
-    risk: string;
-    pair: string;
-  }>> {
-    return this.httpClient.get('/forex-carry-trade');
-  }
-
-  /**
-   * Get currency strength index
-   */
-  async getCurrencyStrengthIndex(): Promise<Array<{
-    currency: string;
-    strengthIndex: number;
-    rank: number;
-    change24h: number;
-    trend: 'Strengthening' | 'Weakening' | 'Stable';
-  }>> {
-    return this.httpClient.get('/currency-strength-index');
-  }
-
-  /**
-   * Get forex heat map
-   * @param period - Time period ("1H", "4H", "1D", "1W", "1M")
-   */
-  async getForexHeatMap(period: '1H' | '4H' | '1D' | '1W' | '1M' = '1D'): Promise<Array<{
-    baseCurrency: string;
-    quoteCurrency: string;
-    pair: string;
-    changePercentage: number;
-    strength: number;
-    color: string;
-  }>> {
-    const params: QueryParams = { period };
-    return this.httpClient.get('/forex-heat-map', params);
-  }
-
-  /**
-   * Get forex pivot points
-   * @param pair - Currency pair (e.g., "EURUSD")
-   */
-  async getForexPivotPoints(pair: string): Promise<{
+  async getHistoricalForexFull(symbol: string, from?: string, to?: string): Promise<Array<{
     symbol: string;
     date: string;
-    pivot: number;
-    resistance1: number;
-    resistance2: number;
-    resistance3: number;
-    support1: number;
-    support2: number;
-    support3: number;
-  }> {
-    const result = await this.httpClient.get(`/forex-pivot-points/${pair}`);
-    return getFirstOrItem(result);
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+    change: number;
+    changePercent: number;
+    vwap: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    return this.httpClient.get('/historical-price-eod/full', params);
+  }
+
+  /**
+   * 1-Minute Interval Forex Data API - Get 1-minute data
+   * @param symbol - Forex symbol (required, e.g., "EURUSD")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   */
+  async getForex1MinuteData(symbol: string, from?: string, to?: string): Promise<Array<{
+    date: string;
+    open: number;
+    low: number;
+    high: number;
+    close: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    return this.httpClient.get('/historical-chart/1min', params);
+  }
+
+  /**
+   * 5-Minute Interval Forex Data API - Get 5-minute data
+   * @param symbol - Forex symbol (required, e.g., "EURUSD")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   */
+  async getForex5MinuteData(symbol: string, from?: string, to?: string): Promise<Array<{
+    date: string;
+    open: number;
+    low: number;
+    high: number;
+    close: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    return this.httpClient.get('/historical-chart/5min', params);
+  }
+
+  /**
+   * 1-Hour Interval Forex Data API - Get 1-hour data
+   * @param symbol - Forex symbol (required, e.g., "EURUSD")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   */
+  async getForex1HourData(symbol: string, from?: string, to?: string): Promise<Array<{
+    date: string;
+    open: number;
+    low: number;
+    high: number;
+    close: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    return this.httpClient.get('/historical-chart/1hour', params);
   }
 }
-

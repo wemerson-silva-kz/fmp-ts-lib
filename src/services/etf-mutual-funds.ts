@@ -1,254 +1,148 @@
-import { getFirstOrItem } from '../utils/index.js';
-import type { ETFInfo, QueryParams } from '../types/index.js';
+import type { QueryParams } from '../types/index.js';
 import { HttpClient } from '../utils/http-client.js';
 
 export class ETFMutualFundsService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Get ETF information
-   * @param symbol - ETF symbol (e.g., "SPY")
+   * ETF & Fund Holdings API - Get ETF/fund holdings
+   * @param symbol - ETF/Fund symbol (required, e.g., "SPY")
    */
-  async getETFInfo(symbol: string): Promise<ETFInfo> {
-    const result = await this.httpClient.get<ETFInfo[]>(`/etf/${symbol}`);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get ETF stock exposure (holdings)
-   * @param symbol - ETF symbol (e.g., "SPY")
-   */
-  async getETFStockExposure(symbol: string): Promise<Array<{
-    etfSymbol: string;
-    assetExposure: string;
-    sharesNumber: number;
-    weightPercentage: number;
-    marketValue: number;
-  }>> {
-    return this.httpClient.get(`/etf-stock-exposure/${symbol}`);
-  }
-
-  /**
-   * Get ETF country weightings
-   * @param symbol - ETF symbol (e.g., "VEA")
-   */
-  async getETFCountryWeightings(symbol: string): Promise<Array<{
-    country: string;
-    weightPercentage: number;
-  }>> {
-    return this.httpClient.get(`/etf-country-weighting/${symbol}`);
-  }
-
-  /**
-   * Get ETF sector weightings
-   * @param symbol - ETF symbol (e.g., "SPY")
-   */
-  async getETFSectorWeightings(symbol: string): Promise<Array<{
-    sector: string;
-    weightPercentage: number;
-  }>> {
-    return this.httpClient.get(`/etf-sector-weighting/${symbol}`);
-  }
-
-  /**
-   * Get mutual fund information
-   * @param symbol - Mutual fund symbol (e.g., "VFIAX")
-   */
-  async getMutualFundInfo(symbol: string): Promise<{
-    symbol: string;
-    companyName: string;
-    marketCap: string;
-    sector: string;
-    industry: string;
-    beta: string;
-    price: string;
-    lastAnnualDividend: string;
-    volume: string;
-    exchange: string;
-    exchangeShortName: string;
-    country: string;
-    isEtf: string;
-    isFund: string;
-    description: string;
-    fundFamily: string;
-    fundType: string;
-    inceptionDate: string;
-    totalAssets: number;
-    totalAssetsDate: string;
-    expenseRatio: number;
-    holdingsCount: number;
-    nav: number;
-    navDate: string;
-  }> {
-    const result = await this.httpClient.get(`/mutual-fund/${symbol}`);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get mutual fund holdings
-   * @param symbol - Mutual fund symbol (e.g., "VFIAX")
-   */
-  async getMutualFundHoldings(symbol: string): Promise<Array<{
+  async getETFHoldings(symbol: string): Promise<Array<{
     asset: string;
     sharesNumber: number;
     weightPercentage: number;
     marketValue: number;
   }>> {
-    return this.httpClient.get(`/mutual-fund-holdings/${symbol}`);
+    return this.httpClient.get('/etf/holdings', { symbol });
   }
 
   /**
-   * Get ETF performance data
-   * @param symbol - ETF symbol (e.g., "SPY")
+   * ETF & Mutual Fund Information API - Get ETF/fund information
+   * @param symbol - ETF/Fund symbol (required, e.g., "SPY")
    */
-  async getETFPerformance(symbol: string): Promise<{
+  async getETFInfo(symbol: string): Promise<Array<{
     symbol: string;
-    oneDay: number;
-    fiveDays: number;
-    oneMonth: number;
-    threeMonths: number;
-    sixMonths: number;
-    oneYear: number;
-    threeYears: number;
-    fiveYears: number;
-    tenYears: number;
-    max: number;
-  }> {
-    const result = await this.httpClient.get(`/etf-performance/${symbol}`);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get ETF dividend history
-   * @param symbol - ETF symbol (e.g., "SPY")
-   */
-  async getETFDividendHistory(symbol: string): Promise<Array<{
-    date: string;
-    label: string;
-    adjDividend: number;
-    dividend: number;
-    recordDate: string;
-    paymentDate: string;
-    declarationDate: string;
-  }>> {
-    return this.httpClient.get(`/historical-price-full/stock_dividend/${symbol}`);
-  }
-
-  /**
-   * Get mutual fund performance data
-   * @param symbol - Mutual fund symbol (e.g., "VFIAX")
-   */
-  async getMutualFundPerformance(symbol: string): Promise<{
-    symbol: string;
-    oneDay: number;
-    fiveDays: number;
-    oneMonth: number;
-    threeMonths: number;
-    sixMonths: number;
-    oneYear: number;
-    threeYears: number;
-    fiveYears: number;
-    tenYears: number;
-    max: number;
-  }> {
-    const result = await this.httpClient.get(`/mutual-fund-performance/${symbol}`);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get ETF expense ratios comparison
-   * @param symbols - Array of ETF symbols
-   */
-  async getETFExpenseRatiosComparison(symbols: string[]): Promise<Array<{
-    symbol: string;
-    name: string;
-    expenseRatio: number;
+    companyName: string;
+    holdingsCount: number;
     totalAssets: number;
+    yearHigh: number;
+    yearLow: number;
+    averageVolume: number;
+    marketCap: number;
+    beta: number;
+    price: number;
+    lastAnnualDividend: number;
+    volume: number;
+    isin: string;
+    cusip: string;
+    expenseRatio: number;
     category: string;
+    lastUpdate: string;
+    domicile: string;
+    aum: number;
+    nav: number;
+    navCurrency: string;
+    totalAssetsDate: string;
+    portfolioTurnover: number;
+    dividendYield: number;
+    avgMarketCapMillions: number;
+    avgMarketCap: number;
+    marketCapRange: string;
+    priceEarningsRatio: number;
+    priceBookRatio: number;
+    priceFreeCashFlowRatio: number;
+    priceSalesRatio: number;
+    website: string;
   }>> {
-    const symbolList = symbols.join(',');
-    return this.httpClient.get(`/etf-expense-ratios/${symbolList}`);
+    return this.httpClient.get('/etf/info', { symbol });
   }
 
   /**
-   * Get top ETFs by category
-   * @param category - ETF category (e.g., "Large Cap", "Technology")
-   * @param limit - Maximum number of results
+   * ETF & Fund Country Allocation API - Get country allocation
+   * @param symbol - ETF/Fund symbol (required, e.g., "SPY")
    */
-  async getTopETFsByCategory(category: string, limit: number = 50): Promise<Array<{
+  async getETFCountryAllocation(symbol: string): Promise<Array<{
+    country: string;
+    weightPercentage: number;
+  }>> {
+    return this.httpClient.get('/etf/country', { symbol });
+  }
+
+  /**
+   * ETF & Fund Sector Allocation API - Get sector allocation
+   * @param symbol - ETF/Fund symbol (required, e.g., "SPY")
+   */
+  async getETFSectorAllocation(symbol: string): Promise<Array<{
+    sector: string;
+    weightPercentage: number;
+  }>> {
+    return this.httpClient.get('/etf/sector', { symbol });
+  }
+
+  /**
+   * ETF List API - Get list of ETFs
+   */
+  async getETFList(): Promise<Array<{
     symbol: string;
     name: string;
     price: number;
-    changesPercentage: number;
-    marketCap: number;
-    volume: number;
-    expenseRatio: number;
-    totalAssets: number;
+    exchange: string;
+    exchangeShortName: string;
+    type: string;
   }>> {
-    const params: QueryParams = { category, limit };
-    return this.httpClient.get('/etf/top-by-category', params);
+    return this.httpClient.get('/etf/list');
   }
 
   /**
-   * Get ETF vs mutual fund comparison
-   * @param etfSymbol - ETF symbol
-   * @param mutualFundSymbol - Mutual fund symbol
+   * Mutual Fund List API - Get list of mutual funds
    */
-  async getETFvsMutualFundComparison(etfSymbol: string, mutualFundSymbol: string): Promise<{
-    etf: {
-      symbol: string;
-      name: string;
-      expenseRatio: number;
-      totalAssets: number;
-      performance: any;
-    };
-    mutualFund: {
-      symbol: string;
-      name: string;
-      expenseRatio: number;
-      totalAssets: number;
-      performance: any;
-    };
-    comparison: {
-      expenseRatioDifference: number;
-      performanceDifference: number;
-      recommendation: string;
-    };
-  }> {
-    const params: QueryParams = { etf: etfSymbol, mutualFund: mutualFundSymbol };
-    const result = await this.httpClient.get('/etf-vs-mutual-fund', params);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get ETF creation and redemption data
-   * @param symbol - ETF symbol (e.g., "SPY")
-   */
-  async getETFCreationRedemption(symbol: string): Promise<Array<{
-    date: string;
-    creationUnits: number;
-    redemptionUnits: number;
-    netFlow: number;
-    totalShares: number;
-  }>> {
-    return this.httpClient.get(`/etf-creation-redemption/${symbol}`);
-  }
-
-  /**
-   * Get mutual fund manager information
-   * @param symbol - Mutual fund symbol (e.g., "VFIAX")
-   */
-  async getMutualFundManager(symbol: string): Promise<{
+  async getMutualFundList(): Promise<Array<{
     symbol: string;
-    fundName: string;
-    managerName: string;
-    managerTenure: number;
-    managerBio: string;
-    managementCompany: string;
-    totalAssetsUnderManagement: number;
-  }> {
-    const result = await this.httpClient.get(`/mutual-fund-manager/${symbol}`);
-    return getFirstOrItem(result);
+    name: string;
+    price: number;
+    exchange: string;
+    exchangeShortName: string;
+    type: string;
+  }>> {
+    return this.httpClient.get('/mutual-fund/list');
+  }
+
+  /**
+   * ETF Stock Exposure API - Get stock exposure
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   */
+  async getETFStockExposure(symbol: string): Promise<Array<{
+    etfSymbol: string;
+    etfName: string;
+    weightPercentage: number;
+    sharesNumber: number;
+    marketValue: number;
+  }>> {
+    return this.httpClient.get('/etf-stock-exposure', { symbol });
+  }
+
+  /**
+   * ETF Sector Exposure API - Get sector exposure
+   * @param sector - Sector name (required, e.g., "Technology")
+   */
+  async getETFSectorExposure(sector: string): Promise<Array<{
+    etfSymbol: string;
+    etfName: string;
+    weightPercentage: number;
+  }>> {
+    return this.httpClient.get('/etf-sector-exposure', { sector });
+  }
+
+  /**
+   * ETF Country Exposure API - Get country exposure
+   * @param country - Country name (required, e.g., "US")
+   */
+  async getETFCountryExposure(country: string): Promise<Array<{
+    etfSymbol: string;
+    etfName: string;
+    weightPercentage: number;
+  }>> {
+    return this.httpClient.get('/etf-country-exposure', { country });
   }
 }
-
