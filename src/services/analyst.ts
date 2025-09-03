@@ -8,25 +8,130 @@ export class AnalystService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Get analyst estimates for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param period - Period type ("annual" or "quarter")
-   * @param limit - Maximum number of results
+   * Financial Estimates API - Get analyst financial estimates
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param period - Period type (required, "annual" or "quarter")
+   * @param page - Page number (optional, default: 0)
+   * @param limit - Maximum number of results (optional, default: 10, max: 1000)
    */
   async getAnalystEstimates(
     symbol: string, 
-    period: 'annual' | 'quarter' = 'annual',
-    limit: number = 30
-  ): Promise<AnalystEstimate[]> {
-    const params: QueryParams = { period, limit };
-    return this.httpClient.get<AnalystEstimate[]>(`/analyst-estimates/${symbol}`, params);
+    period: 'annual' | 'quarter',
+    page?: number,
+    limit?: number
+  ): Promise<Array<{
+    symbol: string;
+    date: string;
+    revenueLow: number;
+    revenueHigh: number;
+    revenueAvg: number;
+    ebitdaLow: number;
+    ebitdaHigh: number;
+    ebitdaAvg: number;
+    ebitLow: number;
+    ebitHigh: number;
+    ebitAvg: number;
+    netIncomeLow: number;
+    netIncomeHigh: number;
+    netIncomeAvg: number;
+    sgaExpenseLow: number;
+    sgaExpenseHigh: number;
+    sgaExpenseAvg: number;
+    epsAvg: number;
+    epsHigh: number;
+    epsLow: number;
+    numAnalystsRevenue: number;
+    numAnalystsEps: number;
+  }>> {
+    const params: QueryParams = { symbol, period };
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/analyst-estimates', params);
   }
 
   /**
-   * Get price targets for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Ratings Snapshot API - Get current financial ratings
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param limit - Maximum number of results (optional, default: 1)
    */
-  async getPriceTarget(symbol: string): Promise<Array<{
+  async getRatingsSnapshot(symbol: string, limit?: number): Promise<Array<{
+    symbol: string;
+    rating: string;
+    overallScore: number;
+    discountedCashFlowScore: number;
+    returnOnEquityScore: number;
+    returnOnAssetsScore: number;
+    debtToEquityScore: number;
+    priceToEarningsScore: number;
+    priceToBookScore: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/ratings-snapshot', params);
+  }
+
+  /**
+   * Historical Ratings API - Get historical financial ratings
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param limit - Maximum number of results (optional, default: 1, max: 10000)
+   */
+  async getHistoricalRatings(symbol: string, limit?: number): Promise<Array<{
+    symbol: string;
+    date: string;
+    rating: string;
+    overallScore: number;
+    discountedCashFlowScore: number;
+    returnOnEquityScore: number;
+    returnOnAssetsScore: number;
+    debtToEquityScore: number;
+    priceToEarningsScore: number;
+    priceToBookScore: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/ratings-historical', params);
+  }
+
+  /**
+   * Price Target Summary API - Get price target summary
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   */
+  async getPriceTargetSummary(symbol: string): Promise<Array<{
+    symbol: string;
+    lastMonthCount: number;
+    lastMonthAvgPriceTarget: number;
+    lastQuarterCount: number;
+    lastQuarterAvgPriceTarget: number;
+    lastYearCount: number;
+    lastYearAvgPriceTarget: number;
+    allTimeCount: number;
+    allTimeAvgPriceTarget: number;
+    publishers: string;
+  }>> {
+    return this.httpClient.get('/price-target-summary', { symbol });
+  }
+
+  /**
+   * Price Target Consensus API - Get consensus price targets
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   */
+  async getPriceTargetConsensus(symbol: string): Promise<Array<{
+    symbol: string;
+    targetHigh: number;
+    targetLow: number;
+    targetConsensus: number;
+    targetMedian: number;
+  }>> {
+    return this.httpClient.get('/price-target-consensus', { symbol });
+  }
+
+  /**
+   * Price Target News API - Get price target news for specific symbol
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param page - Page number (optional, default: 0)
+   * @param limit - Maximum number of results (optional, default: 10)
+   */
+  async getPriceTargetNews(symbol: string, page?: number, limit?: number): Promise<Array<{
     symbol: string;
     publishedDate: string;
     newsURL: string;
@@ -39,83 +144,74 @@ export class AnalystService {
     newsBaseURL: string;
     analystCompany: string;
   }>> {
-    return this.httpClient.get(`/price-target/${symbol}`);
+    const params: QueryParams = { symbol };
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/price-target-news', params);
   }
 
   /**
-   * Get price target summary for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Price Target Latest News API - Get latest price target news for all symbols
+   * @param page - Page number (optional, default: 0, max: 100)
+   * @param limit - Maximum number of results (optional, default: 10, max: 1000)
    */
-  async getPriceTargetSummary(symbol: string): Promise<{
-    symbol: string;
-    lastMonth: number;
-    lastMonthAvgPriceTarget: number;
-    lastQuarter: number;
-    lastQuarterAvgPriceTarget: number;
-    lastYear: number;
-    lastYearAvgPriceTarget: number;
-    allTime: number;
-    allTimeAvgPriceTarget: number;
-    publishers: string[];
-  }> {
-    const result = await this.httpClient.get<Array<{
-      symbol: string;
-      lastMonth: number;
-      lastMonthAvgPriceTarget: number;
-      lastQuarter: number;
-      lastQuarterAvgPriceTarget: number;
-      lastYear: number;
-      lastYearAvgPriceTarget: number;
-      allTime: number;
-      allTimeAvgPriceTarget: number;
-      publishers: string[];
-    }>>(`/price-target-summary/${symbol}`);
-    if (Array.isArray(result) && result.length > 0 && result[0]) {
-      return result[0];
-    }
-    throw new Error(`No price target summary found for symbol ${symbol}`);
-  }
-
-  /**
-   * Get analyst stock recommendations
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getAnalystRecommendations(symbol: string): Promise<Array<{
-    symbol: string;
-    date: string;
-    analystRatingsbuy: number;
-    analystRatingsHold: number;
-    analystRatingsSell: number;
-    analystRatingsStrongSell: number;
-    analystRatingsStrongBuy: number;
-  }>> {
-    return this.httpClient.get(`/analyst-stock-recommendations/${symbol}`);
-  }
-
-  /**
-   * Get upgrades and downgrades for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getUpgradesDowngrades(symbol: string): Promise<Array<{
+  async getPriceTargetLatestNews(page?: number, limit?: number): Promise<Array<{
     symbol: string;
     publishedDate: string;
     newsURL: string;
     newsTitle: string;
-    newsPublisher: string;
-    newGrade: string;
-    previousGrade: string;
-    gradingCompany: string;
-    action: string;
+    analystName: string;
+    priceTarget: number;
+    adjPriceTarget: number;
     priceWhenPosted: number;
+    newsPublisher: string;
+    newsBaseURL: string;
+    analystCompany: string;
   }>> {
-    return this.httpClient.get(`/upgrades-downgrades/${symbol}`);
+    const params: QueryParams = {};
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/price-target-latest-news', params);
   }
 
   /**
-   * Get upgrades and downgrades consensus
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Stock Grades API - Get latest stock grades
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
    */
-  async getUpgradesDowngradesConsensus(symbol: string): Promise<Array<{
+  async getStockGrades(symbol: string): Promise<Array<{
+    symbol: string;
+    date: string;
+    gradingCompany: string;
+    previousGrade: string;
+    newGrade: string;
+    action: string;
+  }>> {
+    return this.httpClient.get('/grades', { symbol });
+  }
+
+  /**
+   * Historical Stock Grades API - Get historical stock grades
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param limit - Maximum number of results (optional, default: 100, max: 1000)
+   */
+  async getHistoricalStockGrades(symbol: string, limit?: number): Promise<Array<{
+    symbol: string;
+    date: string;
+    analystRatingsBuy: number;
+    analystRatingsHold: number;
+    analystRatingsSell: number;
+    analystRatingsStrongSell: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/grades-historical', params);
+  }
+
+  /**
+   * Stock Grades Summary API - Get grades consensus
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   */
+  async getStockGradesSummary(symbol: string): Promise<Array<{
     symbol: string;
     strongBuy: number;
     buy: number;
@@ -124,139 +220,55 @@ export class AnalystService {
     strongSell: number;
     consensus: string;
   }>> {
-    return this.httpClient.get(`/upgrades-downgrades-consensus/${symbol}`);
+    return this.httpClient.get('/grades-consensus', { symbol });
   }
 
   /**
-   * Get price target latest news
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param page - Page number for pagination
+   * Stock Grade News API - Get grade news for specific symbol
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param page - Page number (optional, default: 0)
+   * @param limit - Maximum number of results (optional, default: 1, max: 100)
    */
-  async getPriceTargetLatestNews(symbol: string, page: number = 0): Promise<Array<{
+  async getStockGradeNews(symbol: string, page?: number, limit?: number): Promise<Array<{
     symbol: string;
     publishedDate: string;
     newsURL: string;
     newsTitle: string;
-    analystName: string;
-    priceTarget: number;
-    adjPriceTarget: number;
-    priceWhenPosted: number;
-    newsPublisher: string;
     newsBaseURL: string;
-    analystCompany: string;
-  }>> {
-    const params: QueryParams = { page };
-    return this.httpClient.get(`/price-target-latest-news/${symbol}`, params);
-  }
-
-  /**
-   * Get stock grade news
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param limit - Maximum number of results
-   */
-  async getStockGradeNews(symbol: string, limit: number = 100): Promise<Array<{
-    symbol: string;
-    publishedDate: string;
-    newsURL: string;
-    newsTitle: string;
-    analystName: string;
+    newsPublisher: string;
     newGrade: string;
     previousGrade: string;
-    gradeChange: string;
-    newsPublisher: string;
-    newsBaseURL: string;
-    analystCompany: string;
+    gradingCompany: string;
+    action: string;
+    priceWhenPosted: number;
   }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get(`/upgrades-downgrades-grading-company/${symbol}`, params);
+    const params: QueryParams = { symbol };
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/grades-news', params);
   }
 
   /**
-   * Get latest stock grade news across all stocks
-   * @param limit - Maximum number of results
+   * Stock Grade Latest News API - Get latest grade news for all symbols
+   * @param page - Page number (optional, default: 0, max: 100)
+   * @param limit - Maximum number of results (optional, default: 10, max: 1000)
    */
-  async getLatestStockGradeNews(limit: number = 100): Promise<Array<{
+  async getStockGradeLatestNews(page?: number, limit?: number): Promise<Array<{
     symbol: string;
     publishedDate: string;
     newsURL: string;
     newsTitle: string;
-    analystName: string;
+    newsBaseURL: string;
+    newsPublisher: string;
     newGrade: string;
     previousGrade: string;
-    gradeChange: string;
-    newsPublisher: string;
-    newsBaseURL: string;
-    analystCompany: string;
-  }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get('/upgrades-downgrades-grading-company', params);
-  }
-
-  /**
-   * Get price target by analyst company
-   * @param company - Analyst company name (e.g., "Goldman Sachs")
-   * @param page - Page number for pagination
-   */
-  async getPriceTargetByAnalystCompany(company: string, page: number = 0): Promise<Array<{
-    symbol: string;
-    publishedDate: string;
-    newsURL: string;
-    newsTitle: string;
-    analystName: string;
-    priceTarget: number;
-    adjPriceTarget: number;
+    gradingCompany: string;
+    action: string;
     priceWhenPosted: number;
-    newsPublisher: string;
-    newsBaseURL: string;
-    analystCompany: string;
   }>> {
-    const params: QueryParams = { page };
-    return this.httpClient.get(`/price-target-analyst-company/${company}`, params);
-  }
-
-  /**
-   * Get price target consensus
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getPriceTargetConsensus(symbol: string): Promise<{
-    symbol: string;
-    targetHigh: number;
-    targetLow: number;
-    targetConsensus: number;
-    targetMedian: number;
-  }> {
-    const result = await this.httpClient.get<Array<{
-      symbol: string;
-      targetHigh: number;
-      targetLow: number;
-      targetConsensus: number;
-      targetMedian: number;
-    }>>(`/price-target-consensus/${symbol}`);
-    if (Array.isArray(result) && result.length > 0 && result[0]) {
-      return result[0];
-    }
-    throw new Error(`No price target consensus found for symbol ${symbol}`);
-  }
-
-  /**
-   * Get upgrades and downgrades RSS feed
-   */
-  async getUpgradesDowngradesRSSFeed(): Promise<Array<{
-    title: string;
-    date: string;
-    content: string;
-    symbol: string;
-    url: string;
-  }>> {
-    return this.httpClient.get('/upgrades-downgrades-rss-feed');
-  }
-
-  /**
-   * Get analyst estimates by company
-   * @param company - Company name or analyst firm
-   */
-  async getAnalystEstimatesByCompany(company: string): Promise<AnalystEstimate[]> {
-    const params: QueryParams = { company };
-    return this.httpClient.get<AnalystEstimate[]>('/analyst-estimates', params);
+    const params: QueryParams = {};
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/grades-latest-news', params);
   }
 }

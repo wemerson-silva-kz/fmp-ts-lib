@@ -5,213 +5,223 @@ import type {
   TimeFrame 
 } from '../types/index.js';
 import { HttpClient } from '../utils/http-client.js';
-import { getFirstOrItem, safeCast } from '../utils/index.js';
 
 export class ChartService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Helper function to safely get first item from array or return single item
+   * Stock Chart Light API - Get simplified stock chart data
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
    */
-  private getFirstOrItem<T>(result: T[] | T): T {
-    if (Array.isArray(result)) {
-      if (result.length === 0) {
-        throw new Error('No data returned from API');
-      }
-      return result[0]!; // We just checked length > 0
-    }
-    return result;
-  }
-
-  /**
-   * Get historical price data (full)
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
-   * @param serietype - Series type ("line" or "candle")
-   */
-  async getHistoricalPriceFull(
-    symbol: string,
-    from?: string,
-    to?: string,
-    serietype: 'line' | 'candle' = 'line'
-  ): Promise<{
+  async getStockChartLight(symbol: string, from?: string, to?: string): Promise<Array<{
     symbol: string;
-    historical: HistoricalPrice[];
-  }> {
-    const params: QueryParams = { serietype };
-    if (from) params.from = from;
-    if (to) params.to = to;
-    
-    return this.httpClient.get(`/historical-price-full/${symbol}`, params);
-  }
-
-  /**
-   * Get historical daily prices
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
-   */
-  async getHistoricalDailyPrices(
-    symbol: string,
-    from?: string,
-    to?: string
-  ): Promise<HistoricalPrice[]> {
-    const params: QueryParams = {};
-    if (from) params.from = from;
-    if (to) params.to = to;
-    
-    return this.httpClient.get<HistoricalPrice[]>(`/historical-chart/1day/${symbol}`, params);
-  }
-
-  /**
-   * Get historical intraday prices
-   * @param timeframe - Time frame (1min, 5min, 15min, 30min, 1hour, 4hour)
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
-   */
-  async getHistoricalIntradayPrices(
-    timeframe: TimeFrame,
-    symbol: string,
-    from?: string,
-    to?: string
-  ): Promise<HistoricalPrice[]> {
-    const params: QueryParams = {};
-    if (from) params.from = from;
-    if (to) params.to = to;
-    
-    return this.httpClient.get<HistoricalPrice[]>(`/historical-chart/${timeframe}/${symbol}`, params);
-  }
-
-    /**
-   * Get stock quote
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getQuote(symbol: string): Promise<Quote> {
-    const result = await this.httpClient.get<Quote[]>(`/quote/${symbol}`);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get short quote for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getQuoteShort(symbol: string): Promise<{
-    symbol: string;
+    date: string;
     price: number;
     volume: number;
-  }> {
-    const result = await this.httpClient.get<Array<{
-      symbol: string;
-      price: number;
-      volume: number;
-    }>>(`/quote-short/${symbol}`);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get batch quotes for multiple symbols
-   * @param symbols - Array of stock symbols (e.g., ["AAPL", "GOOGL"])
-   */
-  async getBatchQuote(symbols: string[]): Promise<Quote[]> {
-    const symbolList = symbols.join(',');
-    return this.httpClient.get<Quote[]>(`/quote/${symbolList}`);
-  }
-
-  /**
-   * Get real-time price for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getRealTimePrice(symbol: string): Promise<{
-    symbol: string;
-    price: number;
-  }> {
-    const result = await this.httpClient.get<Array<{
-      symbol: string;
-      price: number;
-    }>>(`/stock/real-time-price/${symbol}`);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get after-hours price for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getAfterHoursPrice(symbol: string): Promise<{
-    symbol: string;
-    price: number;
-    change: number;
-    changesPercentage: number;
-  }> {
-    const result = await this.httpClient.get<Array<{
-      symbol: string;
-      price: number;
-      change: number;
-      changesPercentage: number;
-    }>>(`/after-hours-price/${symbol}`);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get pre-market price for a symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getPreMarketPrice(symbol: string): Promise<{
-    symbol: string;
-    price: number;
-    change: number;
-    changesPercentage: number;
-  }> {
-    const result = await this.httpClient.get<Array<{
-      symbol: string;
-      price: number;
-      change: number;
-      changesPercentage: number;
-    }>>(`/pre-market-price/${symbol}`);
-    return getFirstOrItem(result);
-  }
-
-  /**
-   * Get historical price with dividends
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
-   */
-  async getHistoricalPriceWithDividends(
-    symbol: string,
-    from?: string,
-    to?: string
-  ): Promise<{
-    symbol: string;
-    historical: (HistoricalPrice & { dividend?: number })[];
-  }> {
-    const params: QueryParams = {};
+  }>> {
+    const params: QueryParams = { symbol };
     if (from) params.from = from;
     if (to) params.to = to;
-    
-    return this.httpClient.get(`/historical-price-full/${symbol}`, params);
+    return this.httpClient.get('/historical-price-eod/light', params);
   }
 
   /**
-   * Get historical price with splits
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
+   * Stock Price and Volume Data API - Get full price and volume data
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
    */
-  async getHistoricalPriceWithSplits(
-    symbol: string,
-    from?: string,
-    to?: string
-  ): Promise<{
+  async getStockPriceAndVolume(symbol: string, from?: string, to?: string): Promise<Array<{
     symbol: string;
-    historical: (HistoricalPrice & { split?: number })[];
-  }> {
-    const params: QueryParams = {};
+    date: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+    change: number;
+    changePercent: number;
+    vwap: number;
+  }>> {
+    const params: QueryParams = { symbol };
     if (from) params.from = from;
     if (to) params.to = to;
-    
-    return this.httpClient.get(`/historical-price-full/${symbol}`, params);
+    return this.httpClient.get('/historical-price-eod/full', params);
+  }
+
+  /**
+   * Unadjusted Stock Price API - Get stock price without split adjustments
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   */
+  async getUnadjustedStockPrice(symbol: string, from?: string, to?: string): Promise<Array<{
+    symbol: string;
+    date: string;
+    adjOpen: number;
+    adjHigh: number;
+    adjLow: number;
+    adjClose: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    return this.httpClient.get('/historical-price-eod/non-split-adjusted', params);
+  }
+
+  /**
+   * Dividend Adjusted Price Chart API - Get dividend-adjusted price data
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   */
+  async getDividendAdjustedPrice(symbol: string, from?: string, to?: string): Promise<Array<{
+    symbol: string;
+    date: string;
+    adjOpen: number;
+    adjHigh: number;
+    adjLow: number;
+    adjClose: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    return this.httpClient.get('/historical-price-eod/dividend-adjusted', params);
+  }
+
+  /**
+   * 1 Min Interval Stock Chart API - Get 1-minute interval data
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   * @param nonadjusted - Non-adjusted data (optional, boolean)
+   */
+  async get1MinChart(symbol: string, from?: string, to?: string, nonadjusted?: boolean): Promise<Array<{
+    date: string;
+    open: number;
+    low: number;
+    high: number;
+    close: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    if (nonadjusted !== undefined) params.nonadjusted = nonadjusted;
+    return this.httpClient.get('/historical-chart/1min', params);
+  }
+
+  /**
+   * 5 Min Interval Stock Chart API - Get 5-minute interval data
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   * @param nonadjusted - Non-adjusted data (optional, boolean)
+   */
+  async get5MinChart(symbol: string, from?: string, to?: string, nonadjusted?: boolean): Promise<Array<{
+    date: string;
+    open: number;
+    low: number;
+    high: number;
+    close: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    if (nonadjusted !== undefined) params.nonadjusted = nonadjusted;
+    return this.httpClient.get('/historical-chart/5min', params);
+  }
+
+  /**
+   * 15 Min Interval Stock Chart API - Get 15-minute interval data
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   * @param nonadjusted - Non-adjusted data (optional, boolean)
+   */
+  async get15MinChart(symbol: string, from?: string, to?: string, nonadjusted?: boolean): Promise<Array<{
+    date: string;
+    open: number;
+    low: number;
+    high: number;
+    close: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    if (nonadjusted !== undefined) params.nonadjusted = nonadjusted;
+    return this.httpClient.get('/historical-chart/15min', params);
+  }
+
+  /**
+   * 30 Min Interval Stock Chart API - Get 30-minute interval data
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   * @param nonadjusted - Non-adjusted data (optional, boolean)
+   */
+  async get30MinChart(symbol: string, from?: string, to?: string, nonadjusted?: boolean): Promise<Array<{
+    date: string;
+    open: number;
+    low: number;
+    high: number;
+    close: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    if (nonadjusted !== undefined) params.nonadjusted = nonadjusted;
+    return this.httpClient.get('/historical-chart/30min', params);
+  }
+
+  /**
+   * 1 Hour Interval Stock Chart API - Get 1-hour interval data
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   * @param nonadjusted - Non-adjusted data (optional, boolean)
+   */
+  async get1HourChart(symbol: string, from?: string, to?: string, nonadjusted?: boolean): Promise<Array<{
+    date: string;
+    open: number;
+    low: number;
+    high: number;
+    close: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    if (nonadjusted !== undefined) params.nonadjusted = nonadjusted;
+    return this.httpClient.get('/historical-chart/1hour', params);
+  }
+
+  /**
+   * 4 Hour Interval Stock Chart API - Get 4-hour interval data
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   * @param nonadjusted - Non-adjusted data (optional, boolean)
+   */
+  async get4HourChart(symbol: string, from?: string, to?: string, nonadjusted?: boolean): Promise<Array<{
+    date: string;
+    open: number;
+    low: number;
+    high: number;
+    close: number;
+    volume: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    if (nonadjusted !== undefined) params.nonadjusted = nonadjusted;
+    return this.httpClient.get('/historical-chart/4hour', params);
   }
 }
-

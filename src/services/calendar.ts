@@ -8,147 +8,167 @@ export class CalendarService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Get earnings calendar
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
+   * Dividends Company API - Get dividend data for specific symbol
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param limit - Maximum number of results (optional, default: 100, max: 1000)
    */
-  async getEarningsCalendar(from?: string, to?: string): Promise<EarningsCalendar[]> {
-    const params: QueryParams = {};
-    if (from) params.from = from;
-    if (to) params.to = to;
-    return this.httpClient.get<EarningsCalendar[]>('/earning_calendar', params);
-  }
-
-  /**
-   * Get IPO calendar
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
-   */
-  async getIPOCalendar(from?: string, to?: string): Promise<Array<{
-    date: string;
-    company: string;
+  async getDividends(symbol: string, limit?: number): Promise<Array<{
     symbol: string;
-    exchange: string;
-    actions: string;
-    shares: number;
-    priceRange: string;
-    marketCap: number;
-  }>> {
-    const params: QueryParams = {};
-    if (from) params.from = from;
-    if (to) params.to = to;
-    return this.httpClient.get('/ipo_calendar', params);
-  }
-
-  /**
-   * Get stock split calendar
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
-   */
-  async getStockSplitCalendar(from?: string, to?: string): Promise<Array<{
     date: string;
-    label: string;
-    symbol: string;
-    numerator: number;
-    denominator: number;
-  }>> {
-    const params: QueryParams = {};
-    if (from) params.from = from;
-    if (to) params.to = to;
-    return this.httpClient.get('/stock_split_calendar', params);
-  }
-
-  /**
-   * Get dividend calendar
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
-   */
-  async getDividendCalendar(from?: string, to?: string): Promise<Array<{
-    date: string;
-    label: string;
-    adjDividend: number;
-    symbol: string;
-    dividend: number;
     recordDate: string;
     paymentDate: string;
     declarationDate: string;
+    adjDividend: number;
+    dividend: number;
+    yield: number;
+    frequency: string;
   }>> {
-    const params: QueryParams = {};
-    if (from) params.from = from;
-    if (to) params.to = to;
-    return this.httpClient.get('/stock_dividend_calendar', params);
+    const params: QueryParams = { symbol };
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/dividends', params);
   }
 
   /**
-   * Get economic calendar
-   * @param from - Start date (YYYY-MM-DD)
-   * @param to - End date (YYYY-MM-DD)
+   * Dividends Calendar API - Get dividend calendar for date range
+   * @param from - Start date (required, YYYY-MM-DD format)
+   * @param to - End date (required, YYYY-MM-DD format)
    */
-  async getEconomicCalendar(from?: string, to?: string): Promise<Array<{
-    event: string;
-    date: string;
-    country: string;
-    actual: number;
-    previous: number;
-    change: number;
-    changePercentage: number;
-    estimate: number;
-    impact: string;
-  }>> {
-    const params: QueryParams = {};
-    if (from) params.from = from;
-    if (to) params.to = to;
-    return this.httpClient.get('/economic_calendar', params);
-  }
-
-  /**
-   * Get earnings calendar for a specific symbol
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param limit - Maximum number of results
-   */
-  async getEarningsCalendarBySymbol(symbol: string, limit: number = 80): Promise<EarningsCalendar[]> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get<EarningsCalendar[]>(`/historical/earning_calendar/${symbol}`, params);
-  }
-
-  /**
-   * Get confirmed earnings for today
-   */
-  async getTodayEarnings(): Promise<EarningsCalendar[]> {
-    return this.httpClient.get<EarningsCalendar[]>('/earning_calendar');
-  }
-
-  /**
-   * Get confirmed IPOs for today
-   */
-  async getTodayIPOs(): Promise<Array<{
-    date: string;
-    company: string;
+  async getDividendCalendar(from: string, to: string): Promise<Array<{
     symbol: string;
+    date: string;
+    recordDate: string;
+    paymentDate: string;
+    declarationDate: string;
+    adjDividend: number;
+    dividend: number;
+    yield: number;
+    frequency: string;
+  }>> {
+    return this.httpClient.get('/dividends-calendar', { from, to });
+  }
+
+  /**
+   * Earnings Report API - Get earnings data for specific symbol
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param limit - Maximum number of results (optional, default: 100, max: 1000)
+   */
+  async getEarnings(symbol: string, limit?: number): Promise<Array<{
+    symbol: string;
+    date: string;
+    epsActual: number | null;
+    epsEstimated: number | null;
+    revenueActual: number | null;
+    revenueEstimated: number | null;
+    lastUpdated: string;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/earnings', params);
+  }
+
+  /**
+   * Earnings Calendar API - Get earnings calendar for date range
+   * @param from - Start date (required, YYYY-MM-DD format)
+   * @param to - End date (required, YYYY-MM-DD format)
+   */
+  async getEarningsCalendar(from: string, to: string): Promise<Array<{
+    symbol: string;
+    date: string;
+    epsActual: number;
+    epsEstimated: number;
+    revenueActual: number;
+    revenueEstimated: number;
+    lastUpdated: string;
+  }>> {
+    return this.httpClient.get('/earnings-calendar', { from, to });
+  }
+
+  /**
+   * IPOs Calendar API - Get IPO calendar for date range
+   * @param from - Start date (required, YYYY-MM-DD format)
+   * @param to - End date (required, YYYY-MM-DD format)
+   */
+  async getIPOCalendar(from: string, to: string): Promise<Array<{
+    symbol: string;
+    date: string;
+    daa: string;
+    company: string;
     exchange: string;
     actions: string;
-    shares: number;
-    priceRange: string;
-    marketCap: number;
+    shares: number | null;
+    priceRange: string | null;
+    marketCap: number | null;
   }>> {
-    return this.httpClient.get('/ipo_calendar');
+    return this.httpClient.get('/ipos-calendar', { from, to });
   }
 
   /**
-   * Get economic events for today
+   * IPOs Disclosure API - Get IPO disclosure filings for date range
+   * @param from - Start date (required, YYYY-MM-DD format)
+   * @param to - End date (required, YYYY-MM-DD format)
    */
-  async getTodayEconomicEvents(): Promise<Array<{
-    event: string;
-    date: string;
-    country: string;
-    actual: number;
-    previous: number;
-    change: number;
-    changePercentage: number;
-    estimate: number;
-    impact: string;
+  async getIPODisclosure(from: string, to: string): Promise<Array<{
+    symbol: string;
+    filingDate: string;
+    acceptedDate: string;
+    effectivenessDate: string;
+    cik: string;
+    form: string;
+    url: string;
   }>> {
-    return this.httpClient.get('/economic_calendar');
+    return this.httpClient.get('/ipos-disclosure', { from, to });
+  }
+
+  /**
+   * IPOs Prospectus API - Get IPO prospectus information for date range
+   * @param from - Start date (required, YYYY-MM-DD format)
+   * @param to - End date (required, YYYY-MM-DD format)
+   */
+  async getIPOProspectus(from: string, to: string): Promise<Array<{
+    symbol: string;
+    acceptedDate: string;
+    filingDate: string;
+    ipoDate: string;
+    cik: string;
+    pricePublicPerShare: number;
+    pricePublicTotal: number;
+    discountsAndCommissionsPerShare: number;
+    discountsAndCommissionsTotal: number;
+    proceedsBeforeExpensesPerShare: number;
+    proceedsBeforeExpensesTotal: number;
+    form: string;
+    url: string;
+  }>> {
+    return this.httpClient.get('/ipos-prospectus', { from, to });
+  }
+
+  /**
+   * Stock Split Details API - Get stock split data for specific symbol
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param limit - Maximum number of results (optional, default: 100, max: 1000)
+   */
+  async getStockSplits(symbol: string, limit?: number): Promise<Array<{
+    symbol: string;
+    date: string;
+    numerator: number;
+    denominator: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/splits', params);
+  }
+
+  /**
+   * Stock Splits Calendar API - Get stock splits calendar for date range
+   * @param from - Start date (required, YYYY-MM-DD format)
+   * @param to - End date (required, YYYY-MM-DD format)
+   */
+  async getStockSplitCalendar(from: string, to: string): Promise<Array<{
+    symbol: string;
+    date: string;
+    numerator: number;
+    denominator: number;
+  }>> {
+    return this.httpClient.get('/splits-calendar', { from, to });
   }
 }
-

@@ -12,135 +12,148 @@ export class CompanyService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Get company profile
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Company Profile Data API - Get detailed company profile
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
    */
-  async getCompanyProfile(symbol: string): Promise<CompanyProfile> {
-    const result = await this.httpClient.get<CompanyProfile[]>(`/profile/${symbol}`);
-    if (Array.isArray(result) && result.length > 0 && result[0]) {
-      return result[0];
-    }
-    throw new Error(`No profile found for symbol ${symbol}`);
-  }
-
-  /**
-   * Get key executives for a company
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getKeyExecutives(symbol: string): Promise<Array<{
-    title: string;
-    name: string;
-    pay: number;
-    currencyPay: string;
-    gender: string;
-    yearBorn: number;
-    titleSince: string;
-  }>> {
-    return this.httpClient.get(`/key-executives/${symbol}`);
-  }
-
-  /**
-   * Get market capitalization
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getMarketCapitalization(symbol: string): Promise<Array<{
-    date: string;
+  async getCompanyProfile(symbol: string): Promise<Array<{
     symbol: string;
+    price: number;
     marketCap: number;
+    beta: number;
+    lastDividend: number;
+    range: string;
+    change: number;
+    changePercentage: number;
+    volume: number;
+    averageVolume: number;
+    companyName: string;
+    currency: string;
+    cik: string;
+    isin: string;
+    cusip: string;
+    exchangeFullName: string;
+    exchange: string;
+    industry: string;
+    website: string;
+    description: string;
+    ceo: string;
+    sector: string;
+    country: string;
+    fullTimeEmployees: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    zip: string;
+    image: string;
+    ipoDate: string;
+    defaultImage: boolean;
+    isEtf: boolean;
+    isActivelyTrading: boolean;
+    isAdr: boolean;
+    isFund: boolean;
   }>> {
-    return this.httpClient.get(`/market-capitalization/${symbol}`);
+    return this.httpClient.get('/profile', { symbol });
   }
 
   /**
-   * Get company rating
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Company Profile by CIK API - Get company profile by CIK
+   * @param cik - Central Index Key (required, e.g., "320193")
    */
-  async getCompanyRating(symbol: string): Promise<CompanyRating> {
-    const result = await this.httpClient.get<CompanyRating[]>(`/rating/${symbol}`);
-    if (Array.isArray(result) && result.length > 0 && result[0]) {
-      return result[0];
-    }
-    throw new Error(`No rating found for symbol ${symbol}`);
-  }
-
-  /**
-   * Get historical rating
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param limit - Maximum number of results
-   */
-  async getHistoricalRating(symbol: string, limit: number = 140): Promise<Array<{
+  async getCompanyProfileByCIK(cik: string): Promise<Array<{
     symbol: string;
-    date: string;
-    rating: string;
-    ratingScore: number;
-    ratingRecommendation: string;
+    price: number;
+    marketCap: number;
+    beta: number;
+    lastDividend: number;
+    range: string;
+    change: number;
+    changePercentage: number;
+    volume: number;
+    averageVolume: number;
+    companyName: string;
+    currency: string;
+    cik: string;
+    isin: string;
+    cusip: string;
+    exchangeFullName: string;
+    exchange: string;
+    industry: string;
+    website: string;
+    description: string;
+    ceo: string;
+    sector: string;
+    country: string;
+    fullTimeEmployees: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    zip: string;
+    image: string;
+    ipoDate: string;
+    defaultImage: boolean;
+    isEtf: boolean;
+    isActivelyTrading: boolean;
+    isAdr: boolean;
+    isFund: boolean;
   }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get(`/historical-rating/${symbol}`, params);
+    return this.httpClient.get('/profile-cik', { cik });
   }
 
   /**
-   * Get company core information
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Company Notes API - Get company-issued notes information
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
    */
-  async getCompanyCoreInformation(symbol: string): Promise<CompanyCoreInformation> {
-    const result = await this.httpClient.get<CompanyCoreInformation[]>(`/company-core-information/${symbol}`);
-    if (Array.isArray(result) && result.length > 0 && result[0]) {
-      return result[0];
-    }
-    throw new Error(`No core information found for symbol ${symbol}`);
+  async getCompanyNotes(symbol: string): Promise<Array<{
+    cik: string;
+    symbol: string;
+    title: string;
+    exchange: string;
+  }>> {
+    return this.httpClient.get('/company-notes', { symbol });
   }
 
   /**
-   * Get company outlook with comprehensive information
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Stock Peer Comparison API - Get peer companies
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
    */
-  async getCompanyOutlook(symbol: string): Promise<{
-    profile: CompanyProfile;
-    ratios: FinancialRatios[];
-    insiderTrading: any[];
-    keyExecutives: KeyExecutives[];
-    splitsHistory: any[];
-    stockDividend: any[];
-    stockNews: any[];
-    rating: CompanyRating[];
-    financialsQuarter: any;
-    financialsAnnual: any;
-  }> {
-    return this.httpClient.get(`/company-outlook/${symbol}`);
+  async getStockPeers(symbol: string): Promise<Array<{
+    symbol: string;
+    companyName: string;
+    price: number;
+    mktCap: number;
+  }>> {
+    return this.httpClient.get('/stock-peers', { symbol });
   }
 
   /**
-   * Get company profile by CIK
-   * @param cik - Central Index Key (e.g., "320193")
+   * Delisted Companies API - Get list of delisted companies
+   * @param page - Page number (optional, default: 0)
+   * @param limit - Maximum number of results (optional, default: 100, max: 100)
    */
-  async getCompanyProfileByCIK(cik: string): Promise<CompanyProfile[]> {
-    return this.httpClient.get<CompanyProfile[]>(`/profile-cik/${cik}`);
-  }
-
-  /**
-   * Get delisted companies
-   * @param page - Page number for pagination
-   */
-  async getDelistedCompanies(page: number = 0): Promise<Array<{
+  async getDelistedCompanies(page?: number, limit?: number): Promise<Array<{
     symbol: string;
     companyName: string;
     exchange: string;
     ipoDate: string;
     delistedDate: string;
   }>> {
-    const params: QueryParams = { page };
+    const params: QueryParams = {};
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
     return this.httpClient.get('/delisted-companies', params);
   }
 
   /**
-   * Get historical employee count
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Company Employee Count API - Get current employee count
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param limit - Maximum number of results (optional, default: 100, max: 10000)
    */
-  async getHistoricalEmployeeCount(symbol: string): Promise<Array<{
+  async getEmployeeCount(symbol: string, limit?: number): Promise<Array<{
     symbol: string;
     cik: string;
-    acceptedDate: string;
+    acceptanceTime: string;
     periodOfReport: string;
     companyName: string;
     formType: string;
@@ -148,189 +161,201 @@ export class CompanyService {
     employeeCount: number;
     source: string;
   }>> {
-    return this.httpClient.get(`/historical/employee_count/${symbol}`);
+    const params: QueryParams = { symbol };
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/employee-count', params);
   }
 
   /**
-   * Get historical market capitalization
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   * @param limit - Maximum number of results
+   * Company Historical Employee Count API - Get historical employee count
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param limit - Maximum number of results (optional, default: 100, max: 10000)
    */
-  async getHistoricalMarketCapitalization(symbol: string, limit: number = 100): Promise<Array<{
+  async getHistoricalEmployeeCount(symbol: string, limit?: number): Promise<Array<{
+    symbol: string;
+    cik: string;
+    acceptanceTime: string;
+    periodOfReport: string;
+    companyName: string;
+    formType: string;
+    filingDate: string;
+    employeeCount: number;
+    source: string;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/historical-employee-count', params);
+  }
+
+  /**
+   * Company Market Cap API - Get current market capitalization
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   */
+  async getMarketCapitalization(symbol: string): Promise<Array<{
     symbol: string;
     date: string;
     marketCap: number;
   }>> {
-    const params: QueryParams = { limit };
-    return this.httpClient.get(`/historical-market-capitalization/${symbol}`, params);
+    return this.httpClient.get('/market-capitalization', { symbol });
   }
 
   /**
-   * Get company shares float
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Batch Market Cap API - Get market cap for multiple symbols
+   * @param symbols - Comma-separated symbols (required, e.g., "AAPL,MSFT,GOOG")
    */
-  async getSharesFloat(symbol: string): Promise<{
+  async getBatchMarketCapitalization(symbols: string): Promise<Array<{
+    symbol: string;
+    date: string;
+    marketCap: number;
+  }>> {
+    return this.httpClient.get('/market-capitalization-batch', { symbols });
+  }
+
+  /**
+   * Historical Market Cap API - Get historical market capitalization
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param limit - Maximum number of results (optional, default: 100, max: 5000)
+   * @param from - Start date (optional, YYYY-MM-DD format)
+   * @param to - End date (optional, YYYY-MM-DD format)
+   */
+  async getHistoricalMarketCapitalization(symbol: string, limit?: number, from?: string, to?: string): Promise<Array<{
+    symbol: string;
+    date: string;
+    marketCap: number;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (limit !== undefined) params.limit = limit;
+    if (from) params.from = from;
+    if (to) params.to = to;
+    return this.httpClient.get('/historical-market-capitalization', params);
+  }
+
+  /**
+   * Company Share Float & Liquidity API - Get shares float data
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   */
+  async getSharesFloat(symbol: string): Promise<Array<{
     symbol: string;
     date: string;
     freeFloat: number;
     floatShares: number;
     outstandingShares: number;
-    source: string;
-  }> {
-    const result = await this.httpClient.get<Array<{
-      symbol: string;
-      date: string;
-      freeFloat: number;
-      floatShares: number;
-      outstandingShares: number;
-      source: string;
-    }>>(`/shares_float/${symbol}`);
-    if (Array.isArray(result) && result.length > 0 && result[0]) {
-      return result[0];
-    }
-    throw new Error(`No shares float data found for symbol ${symbol}`);
+  }>> {
+    return this.httpClient.get('/shares-float', { symbol });
   }
 
   /**
-   * Get latest mergers and acquisitions
-   * @param page - Page number for pagination
+   * All Shares Float API - Get shares float for all companies
+   * @param page - Page number (optional, default: 0)
+   * @param limit - Maximum number of results (optional, default: 1000, max: 5000)
    */
-  async getLatestMergersAcquisitions(page: number = 0): Promise<Array<{
-    companyName: string;
+  async getAllSharesFloat(page?: number, limit?: number): Promise<Array<{
     symbol: string;
-    targetedCompanyName: string;
-    targetedSymbol: string;
-    announcedDate: string;
-    pricePerShare: number;
-    transactionValue: number;
-    acceptedDate: string;
+    date: string;
+    freeFloat: number;
+    floatShares: number;
+    outstandingShares: number;
   }>> {
-    const params: QueryParams = { page };
+    const params: QueryParams = {};
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/shares-float-all', params);
+  }
+
+  /**
+   * Latest Mergers & Acquisitions API - Get latest M&A activity
+   * @param page - Page number (optional, default: 0)
+   * @param limit - Maximum number of results (optional, default: 100, max: 1000)
+   */
+  async getLatestMergersAcquisitions(page?: number, limit?: number): Promise<Array<{
+    symbol: string;
+    companyName: string;
+    cik: string;
+    targetedCompanyName: string;
+    targetedCik: string;
+    targetedSymbol: string;
+    transactionDate: string;
+    acceptedDate: string;
+    link: string;
+  }>> {
+    const params: QueryParams = {};
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
     return this.httpClient.get('/mergers-acquisitions-latest', params);
   }
 
   /**
-   * Get executive compensation
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Search Mergers & Acquisitions API - Search M&A by company name
+   * @param name - Company name (required, e.g., "Apple")
+   */
+  async searchMergersAcquisitions(name: string): Promise<Array<{
+    symbol: string;
+    companyName: string;
+    cik: string;
+    targetedCompanyName: string;
+    targetedCik: string;
+    targetedSymbol: string;
+    transactionDate: string;
+    acceptedDate: string;
+    link: string;
+  }>> {
+    return this.httpClient.get('/mergers-acquisitions-search', { name });
+  }
+
+  /**
+   * Company Executives API - Get key executives information
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
+   * @param active - Filter active executives (optional, "true" or "false")
+   */
+  async getKeyExecutives(symbol: string, active?: string): Promise<Array<{
+    title: string;
+    name: string;
+    pay: number | null;
+    currencyPay: string;
+    gender: string;
+    yearBorn: number | null;
+    active: string | null;
+  }>> {
+    const params: QueryParams = { symbol };
+    if (active !== undefined) params.active = active;
+    return this.httpClient.get('/key-executives', params);
+  }
+
+  /**
+   * Executive Compensation API - Get executive compensation data
+   * @param symbol - Stock symbol (required, e.g., "AAPL")
    */
   async getExecutiveCompensation(symbol: string): Promise<Array<{
-    symbol: string;
     cik: string;
+    symbol: string;
     companyName: string;
-    industryTitle: string;
+    filingDate: string;
+    acceptedDate: string;
     nameAndPosition: string;
     year: number;
     salary: number;
     bonus: number;
     stockAward: number;
+    optionAward: number;
     incentivePlanCompensation: number;
     allOtherCompensation: number;
     total: number;
+    link: string;
   }>> {
-    return this.httpClient.get(`/governance/executive_compensation/${symbol}`);
+    return this.httpClient.get('/governance-executive-compensation', { symbol });
   }
 
   /**
-   * Get company peers by industry
-   * @param symbol - Stock symbol (e.g., "AAPL")
+   * Executive Compensation Benchmark API - Get industry compensation benchmarks
+   * @param year - Year (optional, e.g., "2024")
    */
-  async getCompanyPeers(symbol: string): Promise<string[]> {
-    return this.httpClient.get<string[]>(`/stock_peers/${symbol}`);
-  }
-
-  /**
-   * Get analyst coverage for a company
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getAnalystCoverage(symbol: string): Promise<Array<{
-    symbol: string;
-    analystRatingsAndPT: Array<{
-      analystName: string;
-      analystCompany: string;
-      priceTarget: number;
-      newGrade: string;
-      oldGrade: string;
-      gradedDate: string;
-    }>;
+  async getExecutiveCompensationBenchmark(year?: string): Promise<Array<{
+    industryTitle: string;
+    year: number;
+    averageCompensation: number;
   }>> {
-    return this.httpClient.get(`/analyst-coverage/${symbol}`);
-  }
-
-  /**
-   * Get company subsidiaries
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getCompanySubsidiaries(symbol: string): Promise<Array<{
-    symbol: string;
-    cik: string;
-    subsidiary: string;
-    businessAddress: string;
-    businessPhone: string;
-    website: string;
-    industry: string;
-    category: string;
-    country: string;
-    state: string;
-  }>> {
-    return this.httpClient.get(`/subsidiaries/${symbol}`);
-  }
-
-  /**
-   * Get stock peers (similar companies)
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getStockPeers(symbol: string): Promise<string[]> {
-    const result = await this.httpClient.get(`/stock_peers/${symbol}`);
-    return Array.isArray(result) ? result[0]?.peersList || [] : [];
-  }
-
-  /**
-   * Get company employees count
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getEmployeesCount(symbol: string): Promise<Array<{
-    symbol: string;
-    cik: string;
-    acceptanceTime: string;
-    periodOfReport: string;
-    companyName: string;
-    formType: string;
-    filingDate: string;
-    employeeCount: number;
-    source: string;
-  }>> {
-    return this.httpClient.get(`/employee_count/${symbol}`);
-  }
-
-  /**
-   * Get company notes (10-K and 10-Q filings notes)
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getCompanyNotes(symbol: string): Promise<Array<{
-    cik: string;
-    symbol: string;
-    title: string;
-    content: string;
-  }>> {
-    return this.httpClient.get(`/company-notes/${symbol}`);
-  }
-
-  /**
-   * Get historical employees count
-   * @param symbol - Stock symbol (e.g., "AAPL")
-   */
-  async getHistoricalEmployeesCount(symbol: string): Promise<Array<{
-    symbol: string;
-    cik: string;
-    acceptanceTime: string;
-    periodOfReport: string;
-    companyName: string;
-    formType: string;
-    filingDate: string;
-    employeeCount: number;
-    source: string;
-  }>> {
-    return this.httpClient.get(`/historical/employee_count/${symbol}`);
+    const params: QueryParams = {};
+    if (year !== undefined) params.year = year;
+    return this.httpClient.get('/executive-compensation-benchmark', params);
   }
 }
-
