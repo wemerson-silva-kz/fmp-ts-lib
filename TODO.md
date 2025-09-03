@@ -1,6 +1,6 @@
 # 📋 FMP-TS-LIB Services Refactoring TODO
 
-## ✅ **Completed Services** (6/28)
+## ✅ **Completed Services** (9/28)
 
 ### 1. ✅ **Bulk Service** - `src/services/bulk.ts`
 - ✅ 18 endpoints corrigidos
@@ -51,9 +51,23 @@
 - ✅ 22 testes passando
 - ✅ Documentação: `docs/company.md`
 
-## 🔄 **Pending Services** (21/28)
+### 8. ✅ **Commitment of Traders Service** - `src/services/commitment-of-traders.ts`
+- ✅ 3 endpoints corrigidos
+- ✅ COT reports e análises
+- ✅ Parâmetros opcionais
+- ✅ 8 testes passando
+- ✅ Documentação: `docs/commitment-of-traders.md`
 
-### 8. ⏳ **Economics Service** - `src/services/economics.ts`
+### 9. ✅ **Statements Service** - `src/services/statements.ts`
+- ✅ 3 endpoints corrigidos
+- ✅ Income, Balance Sheet, Cash Flow
+- ✅ Parâmetros simplificados
+- ✅ 10 testes passando
+- ✅ Documentação: `docs/statements.md`
+
+## 🔄 **Pending Services** (19/28)
+
+### 10. ⏳ **Economics Service** - `src/services/economics.ts`
 - ❌ Needs documentation review
 - ❌ Endpoint corrections needed
 - ❌ Tests to be created
@@ -160,10 +174,10 @@
 
 ## 📊 **Progress Summary**
 
-- ✅ **Completed**: 7/28 services (25%)
-- ⏳ **Pending**: 21/28 services (75%)
-- 🧪 **Tests Created**: 83 tests total
-- 📚 **Documentation**: 7 service docs created
+- ✅ **Completed**: 9/28 services (32%)
+- ⏳ **Pending**: 19/28 services (68%)
+- 🧪 **Tests Created**: 101 tests total
+- 📚 **Documentation**: 9 service docs created
 
 ## 🎯 **Next Steps**
 
