@@ -831,6 +831,138 @@ export interface BulkRequest {
   limit?: number;
 }
 
+// Bulk CSV Response Types
+export interface BulkCompanyProfile {
+  symbol: string;
+  price: string;
+  marketCap: string;
+  beta: string;
+  lastDividend: string;
+  range: string;
+  change: string;
+  changePercentage: string;
+  volume: string;
+  averageVolume: string;
+  companyName: string;
+  currency: string;
+  cik: string;
+  isin: string;
+  cusip: string;
+  exchangeFullName: string;
+  exchange: string;
+  industry: string;
+  website: string;
+  description: string;
+  ceo: string;
+  sector: string;
+  country: string;
+  fullTimeEmployees: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  image: string;
+  ipoDate: string;
+  defaultImage: string;
+  isEtf: string;
+  isActivelyTrading: string;
+  isAdr: string;
+  isFund: string;
+}
+
+export interface BulkStockRating {
+  symbol: string;
+  date: string;
+  rating: string;
+  discountedCashFlowScore: string;
+  returnOnEquityScore: string;
+  returnOnAssetsScore: string;
+  debtToEquityScore: string;
+  priceToEarningsScore: string;
+  priceToBookScore: string;
+}
+
+export interface BulkDCFValuation {
+  symbol: string;
+  date: string;
+  dcf: string;
+  'Stock Price': string;
+}
+
+export interface BulkFinancialScores {
+  symbol: string;
+  reportedCurrency: string;
+  altmanZScore: string;
+  piotroskiScore: string;
+  workingCapital: string;
+  totalAssets: string;
+  retainedEarnings: string;
+  ebit: string;
+  marketCap: string;
+  totalLiabilities: string;
+  revenue: string;
+}
+
+export interface BulkPriceTargetSummary {
+  symbol: string;
+  lastMonthCount: string;
+  lastMonthAvgPriceTarget: string;
+  lastQuarterCount: string;
+  lastQuarterAvgPriceTarget: string;
+  lastYearCount: string;
+  lastYearAvgPriceTarget: string;
+  allTimeCount: string;
+  allTimeAvgPriceTarget: string;
+  publishers: string;
+}
+
+export interface BulkETFHolder {
+  symbol: string;
+  name: string;
+  sharesNumber: string;
+  asset: string;
+  weightPercentage: string;
+  cusip: string;
+  isin: string;
+  marketValue: string;
+  lastUpdated: string;
+}
+
+export interface BulkUpgradesDowngradesConsensus {
+  symbol: string;
+  strongBuy: string;
+  buy: string;
+  hold: string;
+  sell: string;
+  strongSell: string;
+  consensus: string;
+}
+
+export interface BulkStockPeers {
+  symbol: string;
+  peers: string;
+}
+
+export interface BulkEarningsSurprises {
+  symbol: string;
+  date: string;
+  epsActual: string;
+  epsEstimated: string;
+  lastUpdated: string;
+}
+
+export interface BulkEOD {
+  symbol: string;
+  date: string;
+  open: string;
+  low: string;
+  high: string;
+  close: string;
+  adjClose: string;
+  volume: string;
+}
+
 // Error types
 export interface FMPError {
   message: string;

@@ -1,6 +1,6 @@
 {
   "name": "fmp-ts-lib",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "🚀 Complete TypeScript library for Financial Modeling Prep API with 100% endpoint coverage (298 endpoints), enterprise-grade features, and advanced financial analysis tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,15 +18,11 @@
     "build:clean": "rm -rf dist && npm run build",
     "dev": "bun run src/index.ts",
     "test": "bun test",
+    "vitest": "bun test src/services/__tests__/*.ts",
     "test:coverage": "bun test --coverage",
     "test:real": "bun run test-real-api-fixed.ts",
     "test:auto-detect": "bun run test-auto-detect.ts",
-    "lint": "tsc --noEmit --skipLibCheck",
-    "example:basic": "bun run example.ts",
-    "example:complete": "bun run example-complete.ts",
-    "example:advanced": "bun run example-simplified.ts",
-    "example:rate-limit": "bun run example-rate-limit.ts",
-    "example:enhanced": "bun run example-enhanced-features.ts"
+    "lint": "tsc --noEmit --skipLibCheck"
   },
   "keywords": [
     "financial-modeling-prep",
@@ -71,7 +67,8 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/node": "^20.0.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

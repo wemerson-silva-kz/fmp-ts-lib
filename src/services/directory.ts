@@ -10,98 +10,128 @@ export class DirectoryService {
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Get list of all available stock symbols
+   * Company Symbols List API - Get list of all available stock symbols
    */
-  async getStockList(): Promise<StockList[]> {
-    return this.httpClient.get<StockList[]>('/stock/list');
+  async getStockList(): Promise<Array<{
+    symbol: string;
+    companyName: string;
+  }>> {
+    return this.httpClient.get('/stock-list');
   }
 
   /**
-   * Get list of symbols with available financial statements
+   * Financial Statement Symbols List API - Get symbols with available financial statements
    */
-  async getFinancialStatementSymbolsList(): Promise<FinancialStatementSymbol[]> {
-    return this.httpClient.get<FinancialStatementSymbol[]>('/financial-statement-symbol-list');
+  async getFinancialStatementSymbolsList(): Promise<Array<{
+    symbol: string;
+    companyName: string;
+    tradingCurrency: string;
+    reportingCurrency: string;
+  }>> {
+    return this.httpClient.get('/financial-statement-symbol-list');
   }
 
   /**
-   * Get comprehensive list of CIK numbers
+   * CIK List API - Get comprehensive list of CIK numbers
+   * @param page - Page number (optional, default: 0)
+   * @param limit - Number of records per page (optional, default: 1000, max: 10000)
    */
-  async getCIKList(): Promise<CIKSearch[]> {
-    return this.httpClient.get<CIKSearch[]>('/cik_list');
+  async getCIKList(page?: number, limit?: number): Promise<Array<{
+    cik: string;
+    companyName: string;
+  }>> {
+    const params: QueryParams = {};
+    if (page !== undefined) params.page = page;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/cik-list', params);
   }
 
   /**
-   * Get list of symbol changes (mergers, acquisitions, etc.)
+   * Symbol Changes List API - Get list of symbol changes
+   * @param invalid - Filter invalid symbols (optional, e.g., "false")
+   * @param limit - Number of records (optional, default: 100)
    */
-  async getSymbolChangesList(): Promise<Array<{
+  async getSymbolChangesList(invalid?: string, limit?: number): Promise<Array<{
     date: string;
-    name: string;
+    companyName: string;
     oldSymbol: string;
     newSymbol: string;
   }>> {
-    return this.httpClient.get('/symbol_available');
+    const params: QueryParams = {};
+    if (invalid !== undefined) params.invalid = invalid;
+    if (limit !== undefined) params.limit = limit;
+    return this.httpClient.get('/symbol-change', params);
   }
 
   /**
-   * Get list of available ETF symbols
+   * ETF Symbol Search API - Get list of available ETF symbols
    */
-  async getETFList(): Promise<StockList[]> {
-    return this.httpClient.get<StockList[]>('/etf/list');
+  async getETFList(): Promise<Array<{
+    symbol: string;
+    name: string;
+  }>> {
+    return this.httpClient.get('/etf-list');
   }
 
   /**
-   * Get list of actively trading stocks
+   * Actively Trading List API - Get list of actively trading stocks
    */
-  async getActivelyTradingList(): Promise<StockList[]> {
-    return this.httpClient.get<StockList[]>('/available-traded/list');
+  async getActivelyTradingList(): Promise<Array<{
+    symbol: string;
+    name: string;
+  }>> {
+    return this.httpClient.get('/actively-trading-list');
   }
 
   /**
-   * Get list of companies with available earnings transcripts
+   * Earnings Transcript List API - Get companies with available earnings transcripts
    */
   async getEarningsTranscriptList(): Promise<Array<{
     symbol: string;
-    cik: string;
-    year: number;
-    quarter: number;
+    companyName: string;
+    noOfTranscripts: string;
   }>> {
-    return this.httpClient.get('/earning_call_transcript');
+    return this.httpClient.get('/earnings-transcript-list');
   }
 
   /**
-   * Get list of available exchanges
+   * Available Exchanges API - Get list of supported stock exchanges
    */
   async getAvailableExchanges(): Promise<Array<{
-    name: string;
-    code: string;
-    operatingMIC: string;
-    country: string;
-    currency: string;
-    timezone: string;
-    isMarketOpen: boolean;
-  }>> {
-    return this.httpClient.get('/stock/market/list');
-  }
-
-  /**
-   * Get tradable symbols by exchange
-   * @param exchange - Exchange code (e.g., "NASDAQ", "NYSE")
-   */
-  async getTradableSymbolsByExchange(exchange: string): Promise<StockList[]> {
-    return this.httpClient.get<StockList[]>(`/available-traded/list`, { exchange });
-  }
-
-  /**
-   * Get delisted companies
-   */
-  async getDelistedCompanies(): Promise<Array<{
-    symbol: string;
-    companyName: string;
     exchange: string;
-    ipoDate: string;
-    delistedDate: string;
+    name: string;
+    countryName: string;
+    countryCode: string;
+    symbolSuffix: string;
+    delay: string;
   }>> {
-    return this.httpClient.get('/delisted-companies');
+    return this.httpClient.get('/available-exchanges');
+  }
+
+  /**
+   * Available Sectors API - Get list of industry sectors
+   */
+  async getAvailableSectors(): Promise<Array<{
+    sector: string;
+  }>> {
+    return this.httpClient.get('/available-sectors');
+  }
+
+  /**
+   * Available Industries API - Get list of industries
+   */
+  async getAvailableIndustries(): Promise<Array<{
+    industry: string;
+  }>> {
+    return this.httpClient.get('/available-industries');
+  }
+
+  /**
+   * Available Countries API - Get list of countries with stock symbols
+   */
+  async getAvailableCountries(): Promise<Array<{
+    country: string;
+  }>> {
+    return this.httpClient.get('/available-countries');
   }
 }
-
