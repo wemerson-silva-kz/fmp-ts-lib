@@ -1,12 +1,7 @@
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { describe, it, expect } from 'bun:test';
 import { FMPClient } from '../src/index.js';
-import { GlobalRateLimiter } from '../src/utils/global-rate-limiter.js';
 
 describe('Optional Enhanced Features', () => {
-  beforeEach(() => {
-    GlobalRateLimiter.reset();
-  });
-
   describe('Backward Compatibility', () => {
     it('should work with basic configuration (no enhanced features)', () => {
       const client = new FMPClient({ apiKey: 'test-key' });

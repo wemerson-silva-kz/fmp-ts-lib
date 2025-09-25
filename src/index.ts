@@ -1,6 +1,5 @@
 import type { FMPConfig } from './types/index.js';
 import { HttpClient } from './utils/http-client.js';
-import { GlobalRateLimiter, type GlobalRateLimitOptions } from './utils/global-rate-limiter.js';
 import { 
   SearchService,
   DirectoryService,
@@ -145,33 +144,7 @@ export class FMPClient {
     return this.httpClient.batchRequest(requests);
   }
 
-  /**
-   * Configure global rate limiter
-   */
-  static configureGlobalRateLimit(options: GlobalRateLimitOptions): void {
-    GlobalRateLimiter.configure(options);
-  }
 
-  /**
-   * Get global rate limit usage
-   */
-  getGlobalRateLimitUsage(): {
-    minuteUsage: number;
-    minuteLimit: number;
-    dayUsage: number;
-    dayLimit: number;
-    minuteResetTime?: number;
-    dayResetTime?: number;
-  } {
-    return GlobalRateLimiter.getUsage(this.httpClient['config'].apiKey);
-  }
-
-  /**
-   * Reset global rate limiter (for testing)
-   */
-  static resetGlobalRateLimit(): void {
-    GlobalRateLimiter.reset();
-  }
 
   /**
    * Test the API connection

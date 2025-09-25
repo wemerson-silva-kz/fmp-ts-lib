@@ -1,7 +1,7 @@
 {
   "name": "fmp-ts-lib",
-  "version": "1.1.0",
-  "description": "🚀 Complete TypeScript library for Financial Modeling Prep API with 100% endpoint coverage (298 endpoints), enterprise-grade features, and advanced financial analysis tools",
+  "version": "1.2.0",
+  "description": "🚀 Complete TypeScript library for Financial Modeling Prep API with 100% endpoint coverage (298 endpoints), enterprise-grade features, and advanced financial analysis tools. No built-in rate limiting - you control your usage.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.js",
@@ -43,7 +43,6 @@
     "financial-statements",
     "enterprise",
     "cache",
-    "rate-limiting",
     "retry-logic",
     "portfolio-analysis",
     "financial-analysis"

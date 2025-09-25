@@ -19,7 +19,6 @@
 
 🏢 **Enterprise-Grade Reliability**
 - ✅ Intelligent **memory caching** with TTL
-- ✅ Advanced **rate limiting** (300/min, 250k/day)
 - ✅ **Retry logic** with exponential backoff
 - ✅ Comprehensive **performance metrics**
 - ✅ **Batch request** processing
@@ -73,7 +72,6 @@ import { AdvancedFMPClient } from 'fmp-ts-lib';
 
 const client = new AdvancedFMPClient('your-api-key', {
   cache: { ttl: 300000, maxSize: 1000 },
-  rateLimit: { requestsPerMinute: 300 },
   retry: { maxAttempts: 3, backoffMs: 1000 }
 });
 
@@ -230,13 +228,9 @@ const profile1 = await client.company.getCompanyProfile('AAPL'); // API call
 const profile2 = await client.company.getCompanyProfile('AAPL'); // From cache ⚡
 ```
 
-### 🛡️ **Rate Limiting & Retry**
+### 🛡️ **Retry Logic**
 ```typescript
 const client = new AdvancedFMPClient(apiKey, {
-  rateLimit: {
-    requestsPerMinute: 300,
-    requestsPerDay: 250000
-  },
   retry: {
     maxAttempts: 3,
     backoffMs: 1000,
@@ -244,7 +238,7 @@ const client = new AdvancedFMPClient(apiKey, {
   }
 });
 
-// Automatic rate limiting and retry on failures
+// Automatic retry on failures
 const data = await client.company.getCompanyProfile('AAPL');
 ```
 
@@ -257,8 +251,7 @@ console.log(metrics);
 // {
 //   requests: { total: 150, successful: 148, failed: 2 },
 //   cache: { hits: 89, misses: 61, hitRate: 0.593 },
-//   performance: { avgResponseTime: 245, totalTime: 36750 },
-//   rateLimit: { current: 45, limit: 300, resetTime: 1640995200000 }
+//   performance: { avgResponseTime: 245, totalTime: 36750 }
 // }
 ```
 
@@ -275,12 +268,6 @@ const client = new AdvancedFMPClient(apiKey, {
     ttl: 300000,           // Cache TTL in milliseconds
     maxSize: 1000,         // Maximum cache entries
     cleanupInterval: 60000  // Cleanup interval
-  },
-  
-  // Rate limiting
-  rateLimit: {
-    requestsPerMinute: 300,
-    requestsPerDay: 250000
   },
   
   // Retry logic

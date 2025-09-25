@@ -4,7 +4,6 @@ export { HttpClient } from './http-client.js';
 
 // Performance and reliability
 export { MemoryCache } from './cache.js';
-export { GlobalRateLimiter } from './global-rate-limiter.js';
 export { RetryManager, RetryError } from './retry.js';
 export { MetricsCollector } from './metrics.js';
 
@@ -16,7 +15,6 @@ export { FinancialAnalyzer, PortfolioAnalyzer } from './financial-analyzer.js';
 
 // Types
 export type { CacheOptions, CacheEntry } from './cache.js';
-export type { GlobalRateLimitOptions } from './global-rate-limiter.js';
 export type { RetryOptions } from './retry.js';
 export type { APIMetrics, RequestMetric } from './metrics.js';
 // export type { EnhancedHttpClientOptions } from './enhanced-http-client.js';

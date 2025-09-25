@@ -1,5 +1,4 @@
 import type { FMPConfig, QueryParams, FMPError } from '../types/index.js';
-import { GlobalRateLimiter } from './global-rate-limiter.js';
 import { MemoryCache } from './cache.js';
 import { RetryManager } from './retry.js';
 import { MetricsCollector } from './metrics.js';
@@ -209,9 +208,6 @@ export class HttpClient {
         }
       }
 
-      // Rate limit with auto-retry
-      await this.waitForRateLimit();
-
       // Execute request with optional retry
       const result = this.retryManager 
         ? await this.retryManager.execute(requestFn)
@@ -247,23 +243,6 @@ export class HttpClient {
     }
   }
 
-  private async waitForRateLimit(): Promise<void> {
-    while (true) {
-      const rateLimitCheck = await GlobalRateLimiter.checkAndIncrement(this.config.apiKey);
-      
-      if (rateLimitCheck.allowed) {
-        return; // Can proceed
-      }
-      
-      // Rate limit exceeded - wait and retry
-      const waitTime = (rateLimitCheck.retryAfter || 60) * 1000;
-      console.log(`⏳ Rate limit exceeded. Waiting ${rateLimitCheck.retryAfter}s before retry...`);
-      
-      await new Promise(resolve => setTimeout(resolve, waitTime));
-      // Loop will continue and try again
-    }
-  }
-
   private getCacheKey(endpoint: string, params?: QueryParams): string {
     const paramStr = params ? JSON.stringify(params) : '';
     return `${endpoint}:${paramStr}`;
@@ -273,13 +252,7 @@ export class HttpClient {
   getMetrics() {
     if (!this.metrics) return null;
     
-    const baseMetrics = this.metrics.getMetrics();
-    const rateLimitUsage = GlobalRateLimiter.getUsage(this.config.apiKey);
-    
-    return {
-      ...baseMetrics,
-      rateLimit: rateLimitUsage
-    };
+    return this.metrics.getMetrics();
   }
 
   // Batch requests (if cache is enabled for optimization)
